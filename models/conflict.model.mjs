@@ -1,15 +1,4 @@
-## 7 OCT 2025, checks in /users/register
-> unique users can have similar or exact names but they cannot have exact emails, 
-```if (1).then(no_issue).else(the user is not unique);```   
-> to implement the above said logic in /users/register endpoint ensuring only unique registrations.
-
-
-for that ig i need to check values of email and compare it to provided one and if mathes return 
-> res code (409) conflict 
-
-# logic implemented succesfully
-
-```import pgPromise from 'pg-promise';
+import pgPromise from 'pg-promise';
 import db from './db.mjs';
 
 let pgp = pgPromise(); // initialize pgPromise
@@ -42,4 +31,3 @@ export default async function conflict_check({tableName, colName, value}) {
         throw err;
     }
 }
-```

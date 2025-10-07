@@ -1,5 +1,5 @@
 import {list_users, create_user, edit_user, del_user_by_id} from "../models/users.model.mjs";
-
+import conflict_check from "../models/conflict.model.mjs";
 
 // Create
 const reg_newuser = async (req, res) => {
@@ -10,6 +10,11 @@ const reg_newuser = async (req, res) => {
         //         res.status(201).json(sendData); // 201 means "Created"
         //     }
         // }
+    // check for any conflicting values of emails in database to ensure unque users
+    const does_exists = await conflict_check({tableName: 'users', colName: 'email', value: email});
+    if (does_exists) {
+        return res.status(409).json({message: `task aborted, found conflicts in database, use different [value]: ${email}`});
+    }
     // validate for empty requests
     if (!name || !email) {
         return res.status(400).json({message: "Name and Email are required"});
