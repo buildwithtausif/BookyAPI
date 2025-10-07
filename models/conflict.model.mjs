@@ -7,7 +7,7 @@ let pgp = pgPromise(); // initialize pgPromise
 entity in the server on recieving the same from client. */
 
 /*
-    idea is to pass recieved_data and server_col into this function 
+    idea is to pass table_name and col_name into this function 
     as parameters and the function will check for the recieved_data into server_col
     if found match it will throw a 409 response code of "CONFLICT"
 */
@@ -27,7 +27,7 @@ export default async function conflict_check({tableName, colName, value}) {
         const response = await db.oneOrNone(formatted_query);
         return response !== null
     } catch (err) {
-        console.log(`Error in checking conflicts from the server for ${table_name}: `, err);
+        console.log(`Error in checking conflicts from the server for ${tableName}: `, err);
         throw err;
     }
 }
