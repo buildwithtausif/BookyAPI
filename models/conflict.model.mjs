@@ -1,7 +1,4 @@
-import pgPromise from 'pg-promise';
-import db from './db.mjs';
-
-let pgp = pgPromise(); // initialize pgPromise
+import db, {pgp} from './db.mjs';
 // define confilicting data
 /* A confilicting data is any data that meatches already existing 
 entity in the server on recieving the same from client. */

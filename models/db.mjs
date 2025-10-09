@@ -21,4 +21,6 @@ const db = pgp(connectionQuery);
     }
 })();
 
-export default db;
+// export both as named exports, and db by default
+export { pgp, db };
+export default db; 
