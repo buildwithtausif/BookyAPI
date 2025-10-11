@@ -2,3 +2,5 @@
 node_modules/
 # enviroment variables
 .env
+# exlude brainstorm files
+brainstorms/
