@@ -10,6 +10,6 @@ const user_router = express.Router();
 
 user_router.route("/").get(getusers).post(reg_newuser);
 
-user_router.route("/:public_id").put(update_user).delete(delete_user);
+user_router.route("/:public_id").patch(update_user).delete(delete_user);
 
 export default user_router;

@@ -224,9 +224,9 @@ const delete_book = async (req, res) => {
     }
     // if the book has not been deleted or is not found
     if (!deletedBook) {
-      return {
+      return res.status(404).json({
         error: "Book not found or already deleted",
-      };
+      });
     }
     // service has deleted the data from the database
     return res

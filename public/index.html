@@ -3,188 +3,412 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booky API - Documentation</title>
-    <!-- Tailwind CSS -->
+    <title>Library Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f5f7fa; /* A standard Material UI background gray */
-            color: #333;
+        :root {
+            --bg-primary: #020617;
+            --bg-secondary: #0f172a;
+            --surface: #1e293b;
+            --surface-hover: #334155;
+            --border: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
         }
-        /* Material UI inspired card styling */
-        .api-card {
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.3s ease;
-        }
-        .api-card:hover {
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        /* Material "Chip" style for method tags */
-        .method {
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding: 0.25rem 0.75rem;
-            border-radius: 16px;
-            display: inline-block;
-            color: white;
-        }
-        .method-get { background-color: #1976D2; } /* Material Blue 700 */
-        .method-post { background-color: #388E3C; } /* Material Green 700 */
-        .method-put { background-color: #F57C00; } /* Material Orange 700 */
-        .method-delete { background-color: #D32F2F; } /* Material Red 700 */
+        html { scroll-behavior: smooth; }
+        body { background-color: var(--bg-primary); color: var(--text-primary); font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
-        .code-block-header {
-            background-color: #f1f1f1;
-            border-bottom: 1px solid #ddd;
-            padding: 0.5rem 1rem;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-        }
-        pre {
-            background-color: #fafafa;
-            border-radius: 0 0 8px 8px;
-            padding: 1rem;
-            margin-top: 0 !important;
-            color: #393A34;
-        }
-        .copy-btn {
-            background-color: #e0e0e0;
-            color: #555;
-            border-radius: 4px;
-            padding: 0.25rem 0.5rem;
-            transition: background-color 0.2s ease;
-        }
-        .copy-btn:hover {
-            background-color: #d5d5d5;
-        }
+        .card { background-color: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem; }
+        .btn { transition: all 0.2s ease-in-out; border-radius: 0.5rem; padding: 0.6rem 1rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; justify-content: center; }
+        .btn:disabled { background-color: #334155; color: #64748b; cursor: not-allowed; }
+        .btn-primary { background-color: var(--accent); color: var(--bg-primary); }
+        .btn-primary:hover:not(:disabled) { background-color: var(--accent-hover); }
+        .btn-danger { background-color: #ef4444; color: white; }
+        .btn-danger:hover:not(:disabled) { background-color: #dc2626; }
+        .btn-secondary { background-color: var(--surface-hover); color: var(--text-primary); }
+        .btn-secondary:hover:not(:disabled) { background-color: #475569; }
+
+        #notification { transition: opacity 0.5s, transform 0.5s; z-index: 100; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(2, 6, 23, 0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 50; }
+        .modal-content { background-color: var(--surface); padding: 1.5rem; border-radius: 1rem; width: 90%; max-width: 500px; border: 1px solid var(--border);}
+        .form-input { background-color: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); border-radius: 0.5rem; padding: 0.75rem; width: 100%; transition: border-color 0.2s; }
+        .form-input:focus { outline: none; border-color: var(--accent); }
+        .spinner { border: 4px solid rgba(255, 255, 255, 0.2); border-left-color: var(--accent); border-radius: 50%; width: 32px; height: 32px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .scrollable { overflow-y: auto; }
+        .scrollable::-webkit-scrollbar { width: 6px; }
+        .scrollable::-webkit-scrollbar-track { background: transparent; }
+        .scrollable::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
     </style>
 </head>
 <body class="antialiased">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-12">
-        <header class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 tracking-tight">
-                Booky API
-            </h1>
-            <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-600">
-                Simplyfying your library management
-            </p>
+
+    <!-- Main Container -->
+    <div class="h-screen w-full flex flex-col">
+        <header class="text-center p-6 border-b border-slate-800 flex-shrink-0">
+            <h1 class="text-3xl font-bold text-white tracking-tight">Library Dashboard</h1>
+            <p class="text-sm text-center text-slate-400">Demo Dashboard</p>
         </header>
 
-        <main class="space-y-12">
-            <!-- Books API Section -->
-            <div>
-                <h2 class="text-2xl font-bold text-gray-700 mb-6 flex items-center gap-3"><i class="fa-solid fa-book-bookmark w-6 h-6 text-blue-600"></i>Books API</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="api-card p-5"><code class="text-base font-semibold"><span class="method method-get">GET</span> /api/books</code><p class="mt-2 text-gray-700 text-sm">Retrieves a list of all books.</p></div>
-                    <div class="api-card p-5"><code class="text-base font-semibold"><span class="method method-post">POST</span> /api/books</code><p class="mt-2 text-gray-700 text-sm">Adds a new book to the library.</p></div>
-                    <div class="api-card p-5 lg:row-span-2">
-                        <code class="text-base font-semibold block mb-4">/api/books/:id</code>
-                        <div class="space-y-3">
-                            <p class="text-gray-700 text-sm flex items-center"><span class="method method-get w-20 text-center mr-3">GET</span> Retrieves a single book.</p>
-                            <p class="text-gray-700 text-sm flex items-center"><span class="method method-put w-20 text-center mr-3">PUT</span> Updates a single book.</p>
-                            <p class="text-gray-700 text-sm flex items-center"><span class="method method-delete w-20 text-center mr-3">DELETE</span> Deletes a single book.</p>
-                        </div>
+        <!-- Notification Area -->
+        <div id="notification" class="fixed top-5 right-5 opacity-0 transform translate-x-12 p-4 rounded-lg shadow-lg text-white max-w-sm"></div>
+
+        <!-- Main Content Grid -->
+        <main class="flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 min-h-0">
+
+            <!-- Left Column: Users -->
+            <div class="lg:col-span-3 flex flex-col gap-6 min-h-0">
+                <div class="card flex-grow flex flex-col p-4 min-h-0">
+                    <div class="flex justify-between items-center mb-4 px-2 flex-shrink-0">
+                        <h2 class="text-xl font-semibold text-slate-200">Users</h2>
+                        <button id="add-user-btn" class="btn btn-primary btn-sm !py-1 !px-3">Add</button>
                     </div>
-                    <div class="api-card p-5 md:col-span-2">
-                        <p class="text-sm font-semibold text-gray-800 mb-3">Example Request Body</p>
-                        <div class="code-block-header flex justify-between items-center"><p class="text-xs font-semibold text-gray-500 tracking-wider">POST /api/books</p><button class="copy-btn text-xs font-medium"><i class="fa-regular fa-copy mr-1"></i>Copy</button></div>
-                        <pre class="text-xs sm:text-sm"><code>{ 
-  "title": "The Great Gatsby", 
-  "author": "F. Scott Fitzgerald", 
-  "isbn": "978-0743273565", 
-  "quantity": 5 
-}</code></pre>
+                    <form id="user-search-form" class="flex gap-2 mb-4 px-2 flex-shrink-0">
+                        <input type="text" name="query" placeholder="Search Email or ID..." class="form-input flex-grow text-sm">
+                    </form>
+                    <div id="users-list" class="flex-grow scrollable pr-2 -mr-2 space-y-2">
+                        <!-- User list will be injected here -->
                     </div>
                 </div>
             </div>
 
-            <!-- Users API Section -->
-            <div>
-                 <h2 class="text-2xl font-bold text-gray-700 mb-6 flex items-center gap-3"><i class="fa-solid fa-users w-6 h-6 text-green-700"></i>Users API</h2>
-                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="api-card p-5"><code class="text-base font-semibold"><span class="method method-get">GET</span> /api/users</code><p class="mt-2 text-gray-700 text-sm">Retrieves all registered users.</p></div>
-                    <div class="api-card p-5"><code class="text-base font-semibold"><span class="method method-post">POST</span> /api/users</code><p class="mt-2 text-gray-700 text-sm">Registers a new user.</p></div>
-                    <div class="api-card p-5">
-                        <code class="text-base font-semibold block mb-4">/api/users/:id</code>
-                         <div class="space-y-3">
-                            <p class="text-gray-700 text-sm flex items-center"><span class="method method-get w-20 text-center mr-3">GET</span> Retrieves a single user.</p>
-                            <p class="text-gray-700 text-sm flex items-center"><span class="method method-delete w-20 text-center mr-3">DELETE</span> Deletes a single user.</p>
-                        </div>
+            <!-- Center Column: Books -->
+            <div class="lg:col-span-6 flex flex-col gap-6 min-h-0">
+                <div class="card p-4 flex-shrink-0">
+                     <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-slate-200">Book Filters</h2>
+                        <button id="add-book-btn" class="btn btn-primary btn-sm !py-1 !px-3">Add Book</button>
                     </div>
-                 </div>
-            </div>
-
-            <!-- Borrow & Return API -->
-            <div>
-                <h2 class="text-2xl font-bold text-gray-700 mb-6 flex items-center gap-3"><i class="fa-solid fa-right-left w-6 h-6 text-orange-700"></i>Borrow & Return API</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="api-card p-5">
-                        <code class="text-base font-semibold"><span class="method method-post">POST</span> /api/borrow</code>
-                        <p class="mt-2 text-gray-700 text-sm">Borrows a book. Enforces business logic.</p>
-                        <div class="mt-4">
-                            <div class="code-block-header flex justify-between items-center"><p class="text-xs font-semibold text-gray-500 tracking-wider">JSON BODY</p><button class="copy-btn text-xs font-medium"><i class="fa-regular fa-copy mr-1"></i>Copy</button></div>
-                            <pre class="text-xs sm:text-sm"><code>{ "user_id": 1, "book_id": 12 }</code></pre>
+                    <form id="book-search-form" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <input type="text" name="title" placeholder="Title..." class="form-input text-sm">
+                        <input type="text" name="author" placeholder="Author..." class="form-input text-sm">
+                        <input type="text" name="genre" placeholder="Genre..." class="form-input text-sm">
+                        <input type="text" name="isbn" placeholder="ISBN..." class="form-input text-sm">
+                        <div class="col-span-full flex justify-end gap-3 mt-2">
+                            <button type="button" id="clear-book-search-btn" class="btn btn-secondary">Clear</button>
+                            <button type="submit" class="btn btn-primary">Search</button>
                         </div>
-                    </div>
-                    <div class="api-card p-5">
-                        <code class="text-base font-semibold"><span class="method method-post">POST</span> /api/return</code>
-                        <p class="mt-2 text-gray-700 text-sm">Returns a book. Updates the borrow log.</p>
-                        <div class="mt-4">
-                            <div class="code-block-header flex justify-between items-center"><p class="text-xs font-semibold text-gray-500 tracking-wider">JSON BODY</p><button class="copy-btn text-xs font-medium"><i class="fa-regular fa-copy mr-1"></i>Copy</button></div>
-                            <pre class="text-xs sm:text-sm"><code>{ "log_id": 7, "book_id": 12 }</code></pre>
-                        </div>
+                    </form>
+                </div>
+                <div class="card flex-grow flex flex-col p-4 min-h-0">
+                    <h2 class="text-xl font-semibold text-slate-200 mb-4 px-2 flex-shrink-0">Book Collection</h2>
+                    <div id="books-list" class="flex-grow scrollable grid grid-cols-1 md:grid-cols-2 gap-4 pr-2 -mr-2">
+                         <!-- Book list will be injected here -->
                     </div>
                 </div>
             </div>
+            
+            <!-- Right Column: Actions -->
+            <div class="lg:col-span-3 flex flex-col gap-6 min-h-0">
+                 <div class="card p-4 flex-shrink-0">
+                    <h2 class="text-xl font-semibold text-slate-200 mb-4">Borrow a Book</h2>
+                    <form id="borrow-form" class="space-y-4">
+                        <div>
+                            <label for="borrow-user-select" class="block text-sm font-medium text-slate-400 mb-1">User</label>
+                            <select id="borrow-user-select" class="form-input text-sm"></select>
+                        </div>
+                        <div>
+                            <label for="borrow-book-select" class="block text-sm font-medium text-slate-400 mb-1">Book</label>
+                            <select id="borrow-book-select" class="form-input text-sm"></select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-full mt-2" disabled>Borrow Book</button>
+                    </form>
+                </div>
+                <div class="card flex-grow flex flex-col p-4 min-h-0">
+                    <h2 class="text-xl font-semibold text-slate-200 mb-4 flex-shrink-0">Currently Borrowed</h2>
+                    <div id="borrowed-list" class="scrollable space-y-3 pr-2 -mr-2">
+                        <p class="text-slate-500 text-center py-4 text-sm">Borrowing feature not connected.</p>
+                    </div>
+                </div>
+            </div>
+
         </main>
-        
-        <footer class="text-center mt-16 pt-8 border-t border-gray-200 space-y-4">
-            <p class="text-sm text-gray-500">
-                API developed by <a href="https://github.com/buildwithtausif" target="_blank" rel="noopener noreferrer" class="font-medium text-blue-600 hover:underline">Tausif Alam</a>
-                | &copy; <span id="copyright-year"></span> Booky API. All rights reserved.
-            </p>
-        </footer>
     </div>
-    
+
+    <!-- Modal Placeholder -->
+    <div id="modal" class="hidden"></div>
+
     <script>
-        document.getElementById('copyright-year').textContent = new Date().getFullYear();
+        const API_BASE_URL = 'http://localhost:8000/api'; 
+        
+        const booksListEl = document.getElementById('books-list');
+        const usersListEl = document.getElementById('users-list');
+        const notificationEl = document.getElementById('notification');
+        const modalEl = document.getElementById('modal');
+        const bookSearchForm = document.getElementById('book-search-form');
+        const userSearchForm = document.getElementById('user-search-form');
+        const borrowUserSelect = document.getElementById('borrow-user-select');
+        const borrowBookSelect = document.getElementById('borrow-book-select');
+        
+        let currentBooks = [];
+        let currentUsers = [];
+        const loadingSpinner = '<div class="flex justify-center items-center h-full col-span-full"><div class="spinner"></div></div>';
+        const iconEdit = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>`;
+        const iconDelete = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
 
-        const copyButtons = document.querySelectorAll('.copy-btn');
-        copyButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const pre = button.parentElement.nextElementSibling;
-                const code = pre.querySelector('code');
-                // Use document.execCommand for broader compatibility, especially in iFrames
-                const textArea = document.createElement('textarea');
-                textArea.value = code.innerText.trim();
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                } catch (err) {
-                    console.error('Fallback: Oops, unable to copy', err);
+        // --- Core UI Functions ---
+        function showNotification(message, isError = false) {
+            notificationEl.textContent = message;
+            notificationEl.className = `fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white max-w-sm ${isError ? 'bg-red-600' : 'bg-green-600'}`;
+            notificationEl.classList.remove('opacity-0', 'translate-x-12');
+            setTimeout(() => notificationEl.classList.add('opacity-0', 'translate-x-12'), 3000);
+        }
+
+        function openModal(title, formHtml, submitHandler) {
+            modalEl.innerHTML = `<div class="modal-overlay"><div class="modal-content"><h3 class="text-xl font-semibold mb-4">${title}</h3><form id="modal-form">${formHtml}<div class="flex justify-end gap-3 mt-6"><button type="button" id="cancel-btn" class="btn btn-secondary">Cancel</button><button type="submit" class="btn btn-primary">Save Changes</button></div></form></div></div>`;
+            modalEl.classList.remove('hidden');
+            document.getElementById('modal-form').addEventListener('submit', submitHandler);
+            document.getElementById('cancel-btn').addEventListener('click', closeModal);
+        }
+
+        function openConfirmationModal(message, onConfirm) {
+            modalEl.innerHTML = `<div class="modal-overlay"><div class="modal-content"><h3 class="text-xl font-semibold mb-2">Are you sure?</h3><p class="text-slate-400">${message}</p><div class="flex justify-end gap-3 mt-6"><button type="button" id="cancel-btn" class="btn btn-secondary">Cancel</button><button type="button" id="confirm-btn" class="btn btn-danger">Confirm Delete</button></div></div></div>`;
+            modalEl.classList.remove('hidden');
+            document.getElementById('confirm-btn').addEventListener('click', () => { onConfirm(); closeModal(); });
+            document.getElementById('cancel-btn').addEventListener('click', closeModal);
+        }
+
+        function closeModal() {
+            modalEl.classList.add('hidden');
+            modalEl.innerHTML = '';
+        }
+
+        // --- Generic API Handler ---
+        async function apiRequest(endpoint, method, body, successMessage) {
+            try {
+                const options = { method, headers: { 'Content-Type': 'application/json' } };
+                if (body) options.body = JSON.stringify(body);
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+                if (!response.ok) {
+                    const errorResult = await response.json().catch(() => ({ message: `HTTP Error ${response.status}` }));
+                    throw new Error(errorResult.error || errorResult.message);
                 }
-                document.body.removeChild(textArea);
+                const result = method !== 'DELETE' ? await response.json() : null;
+                if(successMessage) showNotification(successMessage);
+                closeModal();
+                return result;
+            } catch (error) {
+                showNotification(error.message, true);
+                throw error;
+            }
+        }
 
-                // Provide user feedback
-                const originalText = button.innerHTML;
-                button.innerHTML = `<i class="fa-solid fa-check mr-1"></i>Copied!`;
-                button.classList.add('text-green-700');
+        // --- Data Fetching and Rendering ---
+        async function fetchAndRenderBooks(queryParams = {}) {
+            booksListEl.innerHTML = loadingSpinner;
+            try {
+                const queryString = new URLSearchParams(queryParams).toString();
+                const response = await fetch(`${API_BASE_URL}/books?${queryString}`);
+                if (!response.ok && response.status !== 404) throw new Error('Failed to fetch books');
+                const result = response.status === 404 ? [] : await response.json();
+                currentBooks = result.data || result;
+                
+                booksListEl.innerHTML = '';
+                if (!Array.isArray(currentBooks) || currentBooks.length === 0) {
+                    booksListEl.innerHTML = '<p class="text-slate-500 col-span-full text-center py-4">No books match your criteria.</p>';
+                } else {
+                    currentBooks.forEach(book => {
+                        const bookCard = document.createElement('div');
+                        bookCard.className = 'card !p-4 rounded-lg flex flex-col justify-between hover:border-slate-600 transition-colors';
+                        bookCard.innerHTML = `
+                            <div>
+                                <h4 class="font-bold text-md text-slate-100 truncate">${book.title}</h4>
+                                <p class="text-sm text-slate-400 mb-3">by ${book.author}</p>
+                                <div class="text-xs text-slate-400 space-y-1 border-t border-slate-700 pt-3">
+                                    <p><strong class="text-slate-500">Publisher:</strong> ${book.publisher || 'N/A'}</p>
+                                    <p><strong class="text-slate-500">Genre:</strong> ${book.genre || 'N/A'}</p>
+                                    <p><strong class="text-slate-500">ISBN:</strong> ${book.isbn || 'N/A'}</p>
+                                    <p class="truncate"><strong class="text-slate-500">UUID:</strong> ${book.uuid}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-end gap-2 mt-4">
+                                <button class="edit-book-btn btn btn-secondary !p-2" data-uuid='${book.uuid}'>${iconEdit}</button>
+                                <button class="delete-book-btn btn btn-danger !p-2" data-uuid='${book.uuid}'>${iconDelete}</button>
+                            </div>`;
+                        booksListEl.appendChild(bookCard);
+                    });
+                }
+            } catch (error) {
+                showNotification(error.message, true);
+                booksListEl.innerHTML = `<p class="text-red-400 col-span-full">Error: ${error.message}</p>`;
+            }
+            updateBorrowUI();
+        }
 
-                setTimeout(() => {
-                    button.innerHTML = originalText;
-                    button.classList.remove('text-green-700');
-                }, 2000);
+        async function fetchAndRenderUsers(queryParams = {}) {
+            usersListEl.innerHTML = loadingSpinner;
+            try {
+                const queryString = new URLSearchParams(queryParams).toString();
+                const response = await fetch(`${API_BASE_URL}/users?${queryString}`);
+                if (!response.ok && response.status !== 404) throw new Error('Failed to fetch users');
+                const result = response.status === 404 ? [] : await response.json();
+                currentUsers = Array.isArray(result) ? result : [result];
+                
+                usersListEl.innerHTML = '';
+                 if (currentUsers.length === 0 || !currentUsers[0]?.public_id) {
+                    usersListEl.innerHTML = '<p class="text-slate-500 text-center py-4 text-sm">No users found.</p>';
+                } else {
+                    currentUsers.forEach(user => {
+                        const userItem = document.createElement('div');
+                        userItem.className = 'card !p-3 rounded-lg flex justify-between items-center hover:border-slate-600 transition-colors';
+                        userItem.innerHTML = `
+                            <div>
+                                <span class="font-semibold text-slate-100">${user.name}</span>
+                                <p class="text-sm text-slate-400">${user.email}</p>
+                                <p class="text-xs text-slate-500 mt-1 truncate">ID: ${user.public_id}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="edit-user-btn btn btn-secondary !p-2" data-public-id='${user.public_id}'>${iconEdit}</button>
+                                <button class="delete-user-btn btn btn-danger !p-2" data-public-id='${user.public_id}'>${iconDelete}</button>
+                            </div>`;
+                        usersListEl.appendChild(userItem);
+                    });
+                }
+            } catch (error) {
+                showNotification(error.message, true);
+                usersListEl.innerHTML = `<p class="text-red-400">Error: ${error.message}</p>`;
+            }
+            updateBorrowUI();
+        }
+        
+        function updateBorrowUI() {
+            borrowUserSelect.innerHTML = '<option value="">Select a user</option>';
+            currentUsers.forEach(user => {
+                if(user.public_id) {
+                    const option = document.createElement('option');
+                    option.value = user.public_id;
+                    option.textContent = `${user.name} (${user.email})`;
+                    borrowUserSelect.appendChild(option);
+                }
             });
+
+            borrowBookSelect.innerHTML = '<option value="">Select an available book</option>';
+            const availableBooks = currentBooks.filter(book => (book.status === 'available' || !book.status));
+            availableBooks.forEach(book => {
+                const option = document.createElement('option');
+                option.value = book.uuid;
+                option.textContent = book.title;
+                borrowBookSelect.appendChild(option);
+            });
+        }
+
+        // --- Event Listeners ---
+        function setupEventListeners() {
+            document.getElementById('add-book-btn').addEventListener('click', () => {
+                const formHtml = `<input type="text" name="title" placeholder="Title" class="form-input mb-3" required><input type="text" name="author" placeholder="Author" class="form-input mb-3" required><input type="text" name="isbn" placeholder="ISBN (Optional)" class="form-input mb-3"><input type="text" name="publisher" placeholder="Publisher (Optional)" class="form-input mb-3"><input type="text" name="genre" placeholder="Genre (Optional)" class="form-input mb-3"><input type="number" name="quantity" placeholder="Quantity" value="1" min="1" class="form-input" required>`;
+                openModal('Add New Book', formHtml, async (ev) => {
+                    ev.preventDefault();
+                    const data = Object.fromEntries(new FormData(ev.target).entries());
+                    data.quantity = parseInt(data.quantity, 10);
+                    await apiRequest('/books', 'POST', data, 'Book added successfully').then(() => fetchAndRenderBooks());
+                });
+            });
+
+            document.getElementById('add-user-btn').addEventListener('click', () => {
+                 const formHtml = `<input type="text" name="name" placeholder="User Name" class="form-input mb-3" required><input type="email" name="email" placeholder="User Email" class="form-input" required>`;
+                openModal('Register New User', formHtml, async (ev) => {
+                    ev.preventDefault();
+                    const data = Object.fromEntries(new FormData(ev.target).entries());
+                    await apiRequest('/users', 'POST', data, 'User registered successfully').then(() => fetchAndRenderUsers());
+                });
+            });
+            
+            bookSearchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const queryParams = Object.fromEntries(formData.entries());
+                for (let key in queryParams) { if (!queryParams[key]) delete queryParams[key]; }
+                fetchAndRenderBooks(queryParams);
+            });
+            document.getElementById('clear-book-search-btn').addEventListener('click', () => {
+                bookSearchForm.reset();
+                fetchAndRenderBooks();
+            });
+            
+            userSearchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const query = new FormData(e.target).get('query').trim();
+                const queryParams = {};
+                if (query) {
+                    if (query.includes('@')) queryParams.email = query;
+                    else queryParams.public_id = query;
+                }
+                fetchAndRenderUsers(queryParams);
+            });
+
+            document.getElementById('borrow-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                showNotification("Borrow feature is not yet connected to the backend.", true);
+            });
+
+            document.body.addEventListener('click', async (e) => {
+                const target = e.target.closest('button');
+                if (!target) return;
+
+                if (target.classList.contains('delete-user-btn')) {
+                    const publicId = target.dataset.publicId;
+                    openConfirmationModal('This will permanently delete the user.', async () => {
+                        await apiRequest(`/users/${publicId}`, 'DELETE', null, 'User deleted successfully').then(() => fetchAndRenderUsers());
+                    });
+                }
+                if (target.classList.contains('delete-book-btn')) {
+                    const uuid = target.dataset.uuid;
+                    openConfirmationModal('This will permanently delete the book.', async () => {
+                        await apiRequest('/books', 'DELETE', { uuid }, 'Book deleted successfully').then(() => fetchAndRenderBooks());
+                    });
+                }
+                if (target.classList.contains('edit-user-btn')) {
+                    const publicId = target.dataset.publicId;
+                    const formHtml = `<input type="text" name="newName" placeholder="New Name" class="form-input mb-3"><input type="email" name="newEmail" placeholder="New Email" class="form-input">`;
+                    openModal('Edit User', formHtml, async (ev) => {
+                        ev.preventDefault();
+                        const data = Object.fromEntries(new FormData(ev.target).entries());
+                        if (!data.newName && !data.newEmail) return showNotification('Please provide a new name or email.', true);
+                        await apiRequest(`/users/${publicId}`, 'PATCH', data, 'User updated successfully').then(() => fetchAndRenderUsers());
+                    });
+                }
+                if (target.classList.contains('edit-book-btn')) {
+                    const uuid = target.dataset.uuid;
+                    try {
+                        const bookData = await apiRequest(`/books?uuid=${uuid}`, 'GET');
+                        const bookToEdit = bookData[0];
+                        if (!bookToEdit) return showNotification('Could not find book details to edit.', true);
+                        
+                        const formHtml = `
+                            <input type="text" name="title" placeholder="Title" class="form-input mb-3" value="${bookToEdit.title || ''}">
+                            <input type="text" name="author" placeholder="Author" class="form-input mb-3" value="${bookToEdit.author || ''}">
+                            <input type="text" name="publisher" placeholder="Publisher" class="form-input mb-3" value="${bookToEdit.publisher || ''}">
+                            <input type="text" name="genre" placeholder="Genre" class="form-input mb-3" value="${bookToEdit.genre || ''}">
+                            <input type="text" name="isbn" placeholder="ISBN" class="form-input mb-3" value="${bookToEdit.isbn || ''}">
+                            <input type="number" name="quantity" placeholder="Quantity" min="0" class="form-input" value="${bookToEdit.quantity || '0'}">
+                        `;
+                        openModal('Edit Book', formHtml, async (ev) => {
+                            ev.preventDefault();
+                            const formData = new FormData(ev.target);
+                            const edit_book_stack = [];
+                            for (let [key, value] of formData.entries()) {
+                                if (value && String(value) !== String(bookToEdit[key] || '')) {
+                                    edit_book_stack.push({ colName: key, value: key === 'quantity' ? parseInt(value) : value });
+                                }
+                            }
+                            if (edit_book_stack.length === 0) return showNotification('No changes were made.', false);
+                            await apiRequest('/books', 'PATCH', { uuid, edit_book_stack }, 'Book updated successfully').then(() => fetchAndRenderBooks());
+                        });
+                    } catch(err) {
+                        console.error("Failed to open edit modal:", err);
+                    }
+                }
+            });
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            fetchAndRenderBooks();
+            fetchAndRenderUsers();
         });
     </script>
 </body>
