@@ -14,7 +14,7 @@ entity in the server on recieving the same from client. */
  * @param {string} options.tableName --> name of the table in database
  * @param {string} options.colName --> name of the coloumn in database
  * @param {any} options.value - The value to search for value
- * @param {number|string} [options.excludeId] - (Optional) An ID to exclude from the search.
+ * @param {number|string} [options.excludeId] - (Optional) A public_id to exclude from the search.
  * @returns {boolean} True : if any conflict found, False: is no conflict found
  */
 
@@ -31,7 +31,7 @@ export default async function conflict_check({tableName, colName, value, exclude
     }
     // if an exlusion is provided add it the the query template and make one more parameter named excludeID
     if (excludeID !== null) {
-        query_template += ` AND id != $[excludeID]`;
+        query_template += ` AND public_id != $[excludeID]`;
         params.excludeID = excludeID;
     }
 

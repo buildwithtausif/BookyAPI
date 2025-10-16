@@ -8,7 +8,9 @@ const db_pass = process.env.PSQL_PASS;
 const db_name = process.env.PSQL_DB;
 const connectionQuery = `postgres://${db_user}:${db_pass}@localhost:5600/${db_name}`;
 // init pg-promise and estabilish connection
-const pgp = pgPromise();
+const pgp = pgPromise({
+    capSQL: true // to capitalize generated SQL
+});
 const db = pgp(connectionQuery);
 
 (async () => {

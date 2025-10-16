@@ -4,7 +4,7 @@ import db from './db.mjs'; // api_database
 */
 // list all existing users from database
 export async function list_users() {
-    let get_query = `SELECT id, "name", email, created_at, last_modified FROM public.users;`;
+    let get_query = `SELECT public_id, "name", email, created_at, last_modified FROM public.users;`;
 
     // it's user model what i've to do is to import users table from database
     try {
@@ -14,10 +14,11 @@ export async function list_users() {
         throw err;
     }
 }
-export async function find_user_by_id(id) {
-    let get_query = `SELECT * FROM public.users WHERE id = $1`;
+// find a user from their public_id 
+export async function find_user_by_id(public_id) {
+    let get_query = `SELECT * FROM public.users WHERE public_id = $1`;
     try {
-        const user = await db.oneOrNone(get_query, [id]);
+        const user = await db.oneOrNone(get_query, [public_id]);
         return user;
     } catch (err) {
         throw err;
@@ -34,15 +35,15 @@ export async function find_user_by_email(email) {
 }
 
 // create a new user in database
-export async function create_user(name, email) {
+export async function create_user(name, email, public_id) {
    let post_query = `
-        INSERT INTO public.USERS (name, email)
-        VALUES ($1, $2)
-        RETURNING *;
+        INSERT INTO public.USERS (name, email, public_id)
+        VALUES ($1, $2, $3)
+        RETURNING public_id, "name", email, created_at, last_modified;
    `;
 
    try {
-        const newUser = await db.one(post_query, [name, email]);
+        const newUser = await db.one(post_query, [name, email, public_id]);
         return newUser;
    } catch (err) {
         throw err;
@@ -50,7 +51,7 @@ export async function create_user(name, email) {
 }
 
 // update user-details in database
-export async function edit_user(id, newName, newEmail) {
+export async function edit_user(public_id, newName, newEmail) {
     let put_query = `
         UPDATE public.users
         SET 
@@ -69,11 +70,11 @@ export async function edit_user(id, newName, newEmail) {
                         ELSE last_modified
                     END
         WHERE
-            id = $1
+            public_id = $1
         RETURNING *;
     `;
     try {
-        const updated_data = await db.one(put_query, [id, newName, newEmail]);
+        const updated_data = await db.oneOrNone(put_query, [public_id, newName, newEmail]);
         return updated_data;
     } catch (err) {
         throw err;
@@ -81,15 +82,15 @@ export async function edit_user(id, newName, newEmail) {
 }
 
 // Delete a specific user by ID from database
-export async function del_user_by_id(id) {
+export async function del_user_by_id(public_id) {
     let delete_query = `
         DELETE FROM public.users
         WHERE
-            id = $1
+            public_id = $1
         RETURNING *;
     `;
     try {
-        const deleted_usr = await db.oneOrNone(delete_query, [id]);
+        const deleted_usr = await db.oneOrNone(delete_query, [public_id]);
         return deleted_usr;
     } catch (err) {
         throw err;
