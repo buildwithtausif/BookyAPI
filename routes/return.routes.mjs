@@ -4,6 +4,6 @@ import {
 } from "../controllers/return.ctrl.mjs";
 const return_router = express.Router();
 
-return_router.route("/").post(returnBooks);
+return_router.route("/").patch(returnBooks);
 
 export default return_router;
