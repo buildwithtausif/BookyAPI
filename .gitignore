@@ -4,3 +4,5 @@ node_modules/
 .env
 # exlude brainstorm files
 brainstorms/
+# exlude bruno collections folder
+booky-api-testing/

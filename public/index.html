@@ -7,36 +7,46 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --bg-primary: #020617;
-            --bg-secondary: #0f172a;
+            --bg-main: #0f172a;
+            --bg-sidebar: #1e293b;
             --surface: #1e293b;
-            --surface-hover: #334155;
             --border: #334155;
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
-            --accent: #38bdf8;
-            --accent-hover: #0ea5e9;
+            --text-muted: #64748b;
+            --accent: #818cf8;
+            --accent-hover: #6366f1;
+            --danger: #f87171;
+            --danger-hover: #ef4444;
+            --stat-1: #fbbf24;
+            --stat-2: #34d399;
         }
-        html { scroll-behavior: smooth; }
-        body { background-color: var(--bg-primary); color: var(--text-primary); font-family: 'Inter', sans-serif; }
+
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
-        .card { background-color: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem; }
+        body { 
+            background-color: var(--bg-main); 
+            color: var(--text-primary); 
+            font-family: 'Inter', sans-serif; 
+        }
+
+        .surface { background-color: var(--surface); border: 1px solid var(--border); }
+        .sidebar { background-color: var(--bg-sidebar); border-right: 1px solid var(--border); }
+
         .btn { transition: all 0.2s ease-in-out; border-radius: 0.5rem; padding: 0.6rem 1rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; justify-content: center; }
-        .btn:disabled { background-color: #334155; color: #64748b; cursor: not-allowed; }
-        .btn-primary { background-color: var(--accent); color: var(--bg-primary); }
+        .btn:disabled { background-color: var(--border); color: var(--text-secondary); cursor: not-allowed; }
+        .btn-primary { background-color: var(--accent); color: white; }
         .btn-primary:hover:not(:disabled) { background-color: var(--accent-hover); }
-        .btn-danger { background-color: #ef4444; color: white; }
-        .btn-danger:hover:not(:disabled) { background-color: #dc2626; }
-        .btn-secondary { background-color: var(--surface-hover); color: var(--text-primary); }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-danger:hover:not(:disabled) { background-color: var(--danger-hover); }
+        .btn-secondary { background-color: var(--border); color: var(--text-primary); }
         .btn-secondary:hover:not(:disabled) { background-color: #475569; }
 
         #notification { transition: opacity 0.5s, transform 0.5s; z-index: 100; }
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(2, 6, 23, 0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 50; }
-        .modal-content { background-color: var(--surface); padding: 1.5rem; border-radius: 1rem; width: 90%; max-width: 500px; border: 1px solid var(--border);}
-        .form-input { background-color: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); border-radius: 0.5rem; padding: 0.75rem; width: 100%; transition: border-color 0.2s; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 50; }
+        .form-input { background-color: var(--bg-main); border: 1px solid var(--border); color: var(--text-primary); border-radius: 0.5rem; padding: 0.75rem; width: 100%; transition: border-color 0.2s; }
         .form-input:focus { outline: none; border-color: var(--accent); }
-        .spinner { border: 4px solid rgba(255, 255, 255, 0.2); border-left-color: var(--accent); border-radius: 50%; width: 32px; height: 32px; animation: spin 1s linear infinite; }
+        .spinner { border: 4px solid var(--border); border-left-color: var(--accent); border-radius: 50%; width: 32px; height: 32px; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .scrollable { overflow-y: auto; }
         .scrollable::-webkit-scrollbar { width: 6px; }
@@ -46,126 +56,168 @@
 </head>
 <body class="antialiased">
 
-    <!-- Main Container -->
-    <div class="h-screen w-full flex flex-col">
-        <header class="text-center p-6 border-b border-slate-800 flex-shrink-0">
-            <h1 class="text-3xl font-bold text-white tracking-tight">Library Dashboard</h1>
-            <p class="text-sm text-center text-slate-400">Demo Dashboard</p>
-        </header>
-
-        <!-- Notification Area -->
-        <div id="notification" class="fixed top-5 right-5 opacity-0 transform translate-x-12 p-4 rounded-lg shadow-lg text-white max-w-sm"></div>
-
-        <!-- Main Content Grid -->
-        <main class="flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 min-h-0">
-
-            <!-- Left Column: Users -->
-            <div class="lg:col-span-3 flex flex-col gap-6 min-h-0">
-                <div class="card flex-grow flex flex-col p-4 min-h-0">
-                    <div class="flex justify-between items-center mb-4 px-2 flex-shrink-0">
-                        <h2 class="text-xl font-semibold text-slate-200">Users</h2>
-                        <button id="add-user-btn" class="btn btn-primary btn-sm !py-1 !px-3">Add</button>
-                    </div>
-                    <form id="user-search-form" class="flex gap-2 mb-4 px-2 flex-shrink-0">
-                        <input type="text" name="query" placeholder="Search Email or ID..." class="form-input flex-grow text-sm">
-                    </form>
-                    <div id="users-list" class="flex-grow scrollable pr-2 -mr-2 space-y-2">
-                        <!-- User list will be injected here -->
-                    </div>
+    <div class="relative flex min-h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-72 sidebar flex-shrink-0 flex flex-col absolute lg:relative inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-40">
+            <div class="h-20 flex items-center justify-center border-b border-[var(--border)]">
+                <h1 class="text-2xl font-bold tracking-tight text-white">Library OS</h1>
+            </div>
+            <nav class="p-4 space-y-2">
+                <a href="#" class="flex items-center gap-3 px-4 py-2 text-lg font-semibold rounded-lg bg-indigo-500/20 text-[var(--accent)]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                    Dashboard
+                </a>
+            </nav>
+            <div class="p-4 border-t border-[var(--border)]">
+                <div class="flex justify-between items-center mb-4 px-2">
+                    <h3 class="text-sm font-semibold text-[var(--text-secondary)]">Users</h3>
+                    <button id="add-user-btn" class="btn btn-primary btn-sm !py-1 !px-3">Add</button>
+                </div>
+                <div class="px-2 mb-4">
+                    <input type="text" id="user-search-input" placeholder="Filter users..." class="form-input text-sm w-full">
+                </div>
+                 <div id="users-list-sidebar" class="flex-grow scrollable pr-2 -mr-2 space-y-2 h-64">
+                    <!-- User list for sidebar will be injected here -->
                 </div>
             </div>
+        </aside>
+        
+        <!-- Sidebar Overlay for Mobile -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden"></div>
 
-            <!-- Center Column: Books -->
-            <div class="lg:col-span-6 flex flex-col gap-6 min-h-0">
-                <div class="card p-4 flex-shrink-0">
-                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-semibold text-slate-200">Book Filters</h2>
-                        <button id="add-book-btn" class="btn btn-primary btn-sm !py-1 !px-3">Add Book</button>
-                    </div>
-                    <form id="book-search-form" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <input type="text" name="title" placeholder="Title..." class="form-input text-sm">
-                        <input type="text" name="author" placeholder="Author..." class="form-input text-sm">
-                        <input type="text" name="genre" placeholder="Genre..." class="form-input text-sm">
-                        <input type="text" name="isbn" placeholder="ISBN..." class="form-input text-sm">
-                        <div class="col-span-full flex justify-end gap-3 mt-2">
-                            <button type="button" id="clear-book-search-btn" class="btn btn-secondary">Clear</button>
-                            <button type="submit" class="btn btn-primary">Search</button>
-                        </div>
-                    </form>
-                </div>
-                <div class="card flex-grow flex flex-col p-4 min-h-0">
-                    <h2 class="text-xl font-semibold text-slate-200 mb-4 px-2 flex-shrink-0">Book Collection</h2>
-                    <div id="books-list" class="flex-grow scrollable grid grid-cols-1 md:grid-cols-2 gap-4 pr-2 -mr-2">
-                         <!-- Book list will be injected here -->
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Right Column: Actions -->
-            <div class="lg:col-span-3 flex flex-col gap-6 min-h-0">
-                 <div class="card p-4 flex-shrink-0">
-                    <h2 class="text-xl font-semibold text-slate-200 mb-4">Borrow a Book</h2>
-                    <form id="borrow-form" class="space-y-4">
-                        <div>
-                            <label for="borrow-user-select" class="block text-sm font-medium text-slate-400 mb-1">User</label>
-                            <select id="borrow-user-select" class="form-input text-sm"></select>
-                        </div>
-                        <div>
-                            <label for="borrow-book-select" class="block text-sm font-medium text-slate-400 mb-1">Book</label>
-                            <select id="borrow-book-select" class="form-input text-sm"></select>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-full mt-2" disabled>Borrow Book</button>
-                    </form>
-                </div>
-                <div class="card flex-grow flex flex-col p-4 min-h-0">
-                    <h2 class="text-xl font-semibold text-slate-200 mb-4 flex-shrink-0">Currently Borrowed</h2>
-                    <div id="borrowed-list" class="scrollable space-y-3 pr-2 -mr-2">
-                        <p class="text-slate-500 text-center py-4 text-sm">Borrowing feature not connected.</p>
-                    </div>
-                </div>
-            </div>
 
-        </main>
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col w-full">
+            <header class="h-20 flex items-center justify-between px-4 sm:px-8 border-b border-[var(--border)] surface flex-shrink-0">
+                 <div class="flex items-center gap-4">
+                    <button id="menu-toggle" class="lg:hidden text-[var(--text-secondary)]">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                    <div class="hidden sm:block flex-grow">
+                        <div id="book-search-form" class="relative flex items-center max-w-lg">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--text-secondary)]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <input type="text" id="book-search-input" placeholder="Search books..." class="form-input w-full pl-10 pr-32">
+                            <select id="book-search-field" class="absolute right-1 top-1/2 -translate-y-1/2 bg-transparent form-input !border-0 !w-auto !pr-8 !pl-2 text-[var(--text-secondary)] text-sm focus:!ring-0">
+                                <option value="title">By Title</option>
+                                <option value="author">By Author</option>
+                                <option value="isbn">By ISBN</option>
+                                <option value="genre">By Genre</option>
+                                <option value="publisher">By Publisher</option>
+                                <option value="uuid">By UUID</option>
+                            </select>
+                        </div>
+                    </div>
+                 </div>
+                 <div class="flex items-center gap-4">
+                     <button id="add-book-btn" class="btn btn-primary">Add Book</button>
+                </div>
+            </header>
+
+            <main class="flex-1 flex flex-col gap-6 p-4 sm:p-6 overflow-y-auto">
+                 <div class="block sm:hidden flex-grow-0 mb-2">
+                     <div id="book-search-form-mobile" class="relative flex items-center w-full">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--text-secondary)]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        <input type="text" id="book-search-input-mobile" placeholder="Search books..." class="form-input w-full pl-10 pr-32">
+                        <select id="book-search-field-mobile" class="absolute right-1 top-1/2 -translate-y-1/2 bg-transparent form-input !border-0 !w-auto !pr-8 !pl-2 text-[var(--text-secondary)] text-sm focus:!ring-0">
+                            <option value="title">By Title</option>
+                            <option value="author">By Author</option>
+                            <option value="isbn">By ISBN</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Stat Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="surface rounded-lg p-6">
+                        <h3 class="text-sm font-medium text-[var(--text-secondary)]">Total Books</h3>
+                        <p id="total-books-stat" class="text-4xl font-bold mt-2" style="color: var(--stat-1)">0</p>
+                    </div>
+                    <div class="surface rounded-lg p-6">
+                        <h3 class="text-sm font-medium text-[var(--text-secondary)]">Total Users</h3>
+                        <p id="total-users-stat" class="text-4xl font-bold mt-2" style="color: var(--stat-2)">0</p>
+                    </div>
+                     <div class="surface rounded-lg p-6">
+                        <h3 class="text-sm font-medium text-[var(--text-secondary)]">Action Center</h3>
+                         <form id="borrow-form" class="space-y-3 mt-2">
+                             <select id="borrow-user-select" class="form-input text-sm" title="Select a user"></select>
+                             <select id="borrow-book-select" class="form-input text-sm" title="Select a book"></select>
+                             <button type="submit" class="btn btn-primary w-full" disabled>Borrow</button>
+                         </form>
+                    </div>
+                </div>
+                
+                <!-- Books and Users Tables -->
+                <div class="surface rounded-lg flex-grow flex flex-col p-4 min-h-0">
+                    <h2 class="text-xl font-semibold mb-4 px-2 flex-shrink-0">Book Collection</h2>
+                    <div id="books-list" class="flex-grow scrollable pr-2 -mr-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <!-- Book cards will be injected here -->
+                    </div>
+                </div>
+            </main>
+        </div>
     </div>
 
+    <!-- Notification Area -->
+    <div id="notification" class="fixed top-24 right-5 opacity-0 transform translate-x-12 p-4 rounded-lg shadow-lg text-white max-w-sm"></div>
+    
     <!-- Modal Placeholder -->
     <div id="modal" class="hidden"></div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:8000/api'; 
-        
+        const API_BASE_URL = 'http://192.168.1.3:8000/api';
+        // DOM Elements
         const booksListEl = document.getElementById('books-list');
-        const usersListEl = document.getElementById('users-list');
+        const usersListSidebarEl = document.getElementById('users-list-sidebar');
         const notificationEl = document.getElementById('notification');
         const modalEl = document.getElementById('modal');
-        const bookSearchForm = document.getElementById('book-search-form');
-        const userSearchForm = document.getElementById('user-search-form');
+        const bookSearchInput = document.getElementById('book-search-input');
+        const bookSearchField = document.getElementById('book-search-field');
+        const bookSearchInputMobile = document.getElementById('book-search-input-mobile');
+        const bookSearchFieldMobile = document.getElementById('book-search-field-mobile');
+        const userSearchInput = document.getElementById('user-search-input');
         const borrowUserSelect = document.getElementById('borrow-user-select');
         const borrowBookSelect = document.getElementById('borrow-book-select');
-        
-        let currentBooks = [];
-        let currentUsers = [];
-        const loadingSpinner = '<div class="flex justify-center items-center h-full col-span-full"><div class="spinner"></div></div>';
-        const iconEdit = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>`;
-        const iconDelete = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
+        const totalBooksStat = document.getElementById('total-books-stat');
+        const totalUsersStat = document.getElementById('total-users-stat');
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
 
+        // State
+        let currentBooks = [];
+        let allUsers = [];
+
+        // Icons & Spinners
+        const loadingSpinner = '<div class="flex justify-center items-center h-full col-span-full"><div class="spinner"></div></div>';
+        const iconEdit = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--text-secondary)] group-hover:text-[var(--accent)]"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>`;
+        const iconDelete = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--text-secondary)] group-hover:text-[var(--danger)]"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
+
+        // Debounce Utility
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+        
         // --- Core UI Functions ---
         function showNotification(message, isError = false) {
             notificationEl.textContent = message;
-            notificationEl.className = `fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white max-w-sm ${isError ? 'bg-red-600' : 'bg-green-600'}`;
+            notificationEl.className = `fixed top-24 right-5 p-4 rounded-lg shadow-lg text-white max-w-sm surface ${isError ? 'bg-red-500' : 'bg-green-500'}`;
             notificationEl.classList.remove('opacity-0', 'translate-x-12');
             setTimeout(() => notificationEl.classList.add('opacity-0', 'translate-x-12'), 3000);
         }
 
         function openModal(title, formHtml, submitHandler) {
-            modalEl.innerHTML = `<div class="modal-overlay"><div class="modal-content"><h3 class="text-xl font-semibold mb-4">${title}</h3><form id="modal-form">${formHtml}<div class="flex justify-end gap-3 mt-6"><button type="button" id="cancel-btn" class="btn btn-secondary">Cancel</button><button type="submit" class="btn btn-primary">Save Changes</button></div></form></div></div>`;
+            modalEl.innerHTML = `<div class="modal-overlay"><div class="surface p-6 rounded-xl w-11/12 max-w-md shadow-2xl"><h3 class="text-xl font-semibold mb-4">${title}</h3><form id="modal-form">${formHtml}<div class="flex justify-end gap-3 mt-6"><button type="button" id="cancel-btn" class="btn btn-secondary">Cancel</button><button type="submit" class="btn btn-primary">Save Changes</button></div></form></div></div>`;
             modalEl.classList.remove('hidden');
             document.getElementById('modal-form').addEventListener('submit', submitHandler);
             document.getElementById('cancel-btn').addEventListener('click', closeModal);
         }
 
         function openConfirmationModal(message, onConfirm) {
-            modalEl.innerHTML = `<div class="modal-overlay"><div class="modal-content"><h3 class="text-xl font-semibold mb-2">Are you sure?</h3><p class="text-slate-400">${message}</p><div class="flex justify-end gap-3 mt-6"><button type="button" id="cancel-btn" class="btn btn-secondary">Cancel</button><button type="button" id="confirm-btn" class="btn btn-danger">Confirm Delete</button></div></div></div>`;
+            modalEl.innerHTML = `<div class="modal-overlay"><div class="surface p-6 rounded-xl w-11/12 max-w-md shadow-2xl"><h3 class="text-xl font-semibold mb-2">Are you sure?</h3><p class="text-[var(--text-secondary)]">${message}</p><div class="flex justify-end gap-3 mt-6"><button type="button" id="cancel-btn" class="btn btn-secondary">Cancel</button><button type="button" id="confirm-btn" class="btn btn-danger">Confirm Delete</button></div></div></div>`;
             modalEl.classList.remove('hidden');
             document.getElementById('confirm-btn').addEventListener('click', () => { onConfirm(); closeModal(); });
             document.getElementById('cancel-btn').addEventListener('click', closeModal);
@@ -176,7 +228,7 @@
             modalEl.innerHTML = '';
         }
 
-        // --- Generic API Handler ---
+        // Generic API Handler
         async function apiRequest(endpoint, method, body, successMessage) {
             try {
                 const options = { method, headers: { 'Content-Type': 'application/json' } };
@@ -196,7 +248,42 @@
             }
         }
 
-        // --- Data Fetching and Rendering ---
+        // Data Fetching and Rendering
+        const debouncedBookSearch = debounce((params) => fetchAndRenderBooks(params), 400);
+        const debouncedUserSearch = debounce((params) => fetchAndRenderUsers(params), 400);
+        
+        async function getBookCover(book) {
+            const placeholder = 'https://placehold.co/128x192/1f2937/9ca3af?text=No+Cover';
+            if (book.isbn) {
+                try {
+                    const openLibraryUrl = `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg?default=false`;
+                    const response = await fetch(openLibraryUrl, { method: 'HEAD' });
+                    if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
+                        return openLibraryUrl;
+                    }
+                } catch (e) { /* Fallback */ }
+                try {
+                    const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${book.isbn}&maxResults=1`);
+                    const data = await response.json();
+                    if (data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail) {
+                        return data.items[0].volumeInfo.imageLinks.thumbnail.replace("http://", "https://");
+                    }
+                } catch (error) { /* Fallback */ }
+            }
+            if (book.title) {
+                try {
+                    const query = `intitle:${encodeURIComponent(book.title)}${book.author ? `+inauthor:${encodeURIComponent(book.author)}` : ''}`;
+                    const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=1`);
+                    const data = await response.json();
+                     if (data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail) {
+                        return data.items[0].volumeInfo.imageLinks.thumbnail.replace("http://", "https://");
+                    }
+                } catch (error) { /* Final fallback */ }
+            }
+            return placeholder;
+        }
+
+
         async function fetchAndRenderBooks(queryParams = {}) {
             booksListEl.innerHTML = loadingSpinner;
             try {
@@ -205,87 +292,103 @@
                 if (!response.ok && response.status !== 404) throw new Error('Failed to fetch books');
                 const result = response.status === 404 ? [] : await response.json();
                 currentBooks = result.data || result;
+                totalBooksStat.textContent = currentBooks.length;
                 
                 booksListEl.innerHTML = '';
                 if (!Array.isArray(currentBooks) || currentBooks.length === 0) {
-                    booksListEl.innerHTML = '<p class="text-slate-500 col-span-full text-center py-4">No books match your criteria.</p>';
+                    booksListEl.innerHTML = '<p class="text-[var(--text-secondary)] col-span-full text-center py-4">No books match your criteria.</p>';
                 } else {
-                    currentBooks.forEach(book => {
-                        const bookCard = document.createElement('div');
-                        bookCard.className = 'card !p-4 rounded-lg flex flex-col justify-between hover:border-slate-600 transition-colors';
+                    currentBooks.forEach(async (book) => {
+                         const bookCard = document.createElement('div');
+                        bookCard.className = 'surface rounded-lg p-4 flex flex-col justify-between shadow-sm hover:border-[var(--accent)] transition-colors';
+                        bookCard.dataset.bookUuid = book.uuid;
                         bookCard.innerHTML = `
-                            <div>
-                                <h4 class="font-bold text-md text-slate-100 truncate">${book.title}</h4>
-                                <p class="text-sm text-slate-400 mb-3">by ${book.author}</p>
-                                <div class="text-xs text-slate-400 space-y-1 border-t border-slate-700 pt-3">
-                                    <p><strong class="text-slate-500">Publisher:</strong> ${book.publisher || 'N/A'}</p>
-                                    <p><strong class="text-slate-500">Genre:</strong> ${book.genre || 'N/A'}</p>
-                                    <p><strong class="text-slate-500">ISBN:</strong> ${book.isbn || 'N/A'}</p>
-                                    <p class="truncate"><strong class="text-slate-500">UUID:</strong> ${book.uuid}</p>
+                            <div class="flex gap-4">
+                                <img src="https://placehold.co/128x192/1f2937/374151?text=..." alt="Cover of ${book.title}" class="w-20 h-28 object-cover rounded flex-shrink-0 bg-[var(--border)]">
+                                <div class="flex-grow min-w-0">
+                                    <h4 class="font-bold text-md truncate">${book.title}</h4>
+                                    <p class="text-sm text-[var(--text-secondary)] mb-2">by ${book.author}</p>
+                                    <div class="text-xs text-[var(--text-muted)]">${book.genre || 'N/A'} &bull; ${book.publisher || 'N/A'}</div>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-end gap-2 mt-4">
-                                <button class="edit-book-btn btn btn-secondary !p-2" data-uuid='${book.uuid}'>${iconEdit}</button>
-                                <button class="delete-book-btn btn btn-danger !p-2" data-uuid='${book.uuid}'>${iconDelete}</button>
+                            <div class="text-xs font-mono text-[var(--text-secondary)] mt-3 border-t border-[var(--border)] pt-2 space-y-1">
+                                <div><strong class="font-medium text-[var(--text-muted)]">ISBN:</strong> ${book.isbn || 'N/A'}</div>
+                                <div class="truncate"><strong class="font-medium text-[var(--text-muted)]">UUID:</strong> ${book.uuid}</div>
+                            </div>
+                            <div class="flex items-center justify-end gap-3 mt-4">
+                                <button class="edit-book-btn group" data-uuid='${book.uuid}'>${iconEdit}</button>
+                                <button class="delete-book-btn group" data-uuid='${book.uuid}'>${iconDelete}</button>
                             </div>`;
                         booksListEl.appendChild(bookCard);
+
+                        const coverUrl = await getBookCover(book);
+                        const imgEl = bookCard.querySelector('img');
+                        imgEl.src = coverUrl;
                     });
                 }
             } catch (error) {
                 showNotification(error.message, true);
-                booksListEl.innerHTML = `<p class="text-red-400 col-span-full">Error: ${error.message}</p>`;
+                booksListEl.innerHTML = `<p class="text-red-500 col-span-full">Error: ${error.message}</p>`;
             }
             updateBorrowUI();
         }
 
         async function fetchAndRenderUsers(queryParams = {}) {
-            usersListEl.innerHTML = loadingSpinner;
+            usersListSidebarEl.innerHTML = loadingSpinner;
             try {
                 const queryString = new URLSearchParams(queryParams).toString();
-                const response = await fetch(`${API_BASE_URL}/users?${queryString}`);
-                if (!response.ok && response.status !== 404) throw new Error('Failed to fetch users');
-                const result = response.status === 404 ? [] : await response.json();
-                currentUsers = Array.isArray(result) ? result : [result];
-                
-                usersListEl.innerHTML = '';
-                 if (currentUsers.length === 0 || !currentUsers[0]?.public_id) {
-                    usersListEl.innerHTML = '<p class="text-slate-500 text-center py-4 text-sm">No users found.</p>';
-                } else {
-                    currentUsers.forEach(user => {
-                        const userItem = document.createElement('div');
-                        userItem.className = 'card !p-3 rounded-lg flex justify-between items-center hover:border-slate-600 transition-colors';
-                        userItem.innerHTML = `
-                            <div>
-                                <span class="font-semibold text-slate-100">${user.name}</span>
-                                <p class="text-sm text-slate-400">${user.email}</p>
-                                <p class="text-xs text-slate-500 mt-1 truncate">ID: ${user.public_id}</p>
-                            </div>
-                            <div class="flex gap-2">
-                                <button class="edit-user-btn btn btn-secondary !p-2" data-public-id='${user.public_id}'>${iconEdit}</button>
-                                <button class="delete-user-btn btn btn-danger !p-2" data-public-id='${user.public_id}'>${iconDelete}</button>
-                            </div>`;
-                        usersListEl.appendChild(userItem);
-                    });
+                const result = await apiRequest(`/users?${queryString}`, 'GET');
+                const users = Array.isArray(result) ? result : [result];
+                if (Object.keys(queryParams).length === 0) {
+                    allUsers = users;
+                    totalUsersStat.textContent = allUsers.length;
                 }
+                renderUserList(users);
             } catch (error) {
-                showNotification(error.message, true);
-                usersListEl.innerHTML = `<p class="text-red-400">Error: ${error.message}</p>`;
+                 if (error.message.includes('404')) {
+                    renderUserList([]);
+                 } else {
+                    showNotification(error.message, true);
+                    usersListSidebarEl.innerHTML = `<p class="text-red-500 px-2">Error</p>`;
+                 }
             }
             updateBorrowUI();
+        }
+
+        function renderUserList(users) {
+            usersListSidebarEl.innerHTML = '';
+            if (users.length === 0) {
+                usersListSidebarEl.innerHTML = '<p class="text-[var(--text-secondary)] text-center py-4 text-sm">No users found.</p>';
+                return;
+            }
+            users.forEach(user => {
+                 const userItemSidebar = document.createElement('div');
+                userItemSidebar.className = 'flex justify-between items-center p-2 rounded-lg hover:bg-[var(--bg-main)] transition-colors';
+                userItemSidebar.innerHTML = `
+                    <div>
+                        <span class="font-semibold text-sm">${user.name}</span>
+                        <p class="text-xs text-[var(--text-secondary)]">${user.email}</p>
+                        <p class="text-xs font-mono text-[var(--text-muted)] mt-1">${user.public_id}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="edit-user-btn group" data-public-id='${user.public_id}'>${iconEdit}</button>
+                        <button class="delete-user-btn group" data-public-id='${user.public_id}'>${iconDelete}</button>
+                    </div>`;
+                usersListSidebarEl.appendChild(userItemSidebar);
+            });
         }
         
         function updateBorrowUI() {
             borrowUserSelect.innerHTML = '<option value="">Select a user</option>';
-            currentUsers.forEach(user => {
+            allUsers.forEach(user => {
                 if(user.public_id) {
                     const option = document.createElement('option');
                     option.value = user.public_id;
-                    option.textContent = `${user.name} (${user.email})`;
+                    option.textContent = `${user.name}`;
                     borrowUserSelect.appendChild(option);
                 }
             });
-
-            borrowBookSelect.innerHTML = '<option value="">Select an available book</option>';
+            borrowBookSelect.innerHTML = '<option value="">Select a book</option>';
             const availableBooks = currentBooks.filter(book => (book.status === 'available' || !book.status));
             availableBooks.forEach(book => {
                 const option = document.createElement('option');
@@ -295,10 +398,21 @@
             });
         }
 
-        // --- Event Listeners ---
+        // --- Event Listeners Setup ---
         function setupEventListeners() {
+            // Mobile Sidebar Toggle
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+                sidebarOverlay.classList.toggle('hidden');
+            });
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+            });
+            
+            // Add Book
             document.getElementById('add-book-btn').addEventListener('click', () => {
-                const formHtml = `<input type="text" name="title" placeholder="Title" class="form-input mb-3" required><input type="text" name="author" placeholder="Author" class="form-input mb-3" required><input type="text" name="isbn" placeholder="ISBN (Optional)" class="form-input mb-3"><input type="text" name="publisher" placeholder="Publisher (Optional)" class="form-input mb-3"><input type="text" name="genre" placeholder="Genre (Optional)" class="form-input mb-3"><input type="number" name="quantity" placeholder="Quantity" value="1" min="1" class="form-input" required>`;
+                 const formHtml = `<input type="text" name="title" placeholder="Title" class="form-input mb-3" required><input type="text" name="author" placeholder="Author" class="form-input mb-3" required><input type="text" name="isbn" placeholder="ISBN (Optional)" class="form-input mb-3"><input type="text" name="publisher" placeholder="Publisher (Optional)" class="form-input mb-3"><input type="text" name="genre" placeholder="Genre (Optional)" class="form-input mb-3"><input type="number" name="quantity" placeholder="Quantity" value="1" min="1" class="form-input" required>`;
                 openModal('Add New Book', formHtml, async (ev) => {
                     ev.preventDefault();
                     const data = Object.fromEntries(new FormData(ev.target).entries());
@@ -307,43 +421,52 @@
                 });
             });
 
+            // Add User
             document.getElementById('add-user-btn').addEventListener('click', () => {
                  const formHtml = `<input type="text" name="name" placeholder="User Name" class="form-input mb-3" required><input type="email" name="email" placeholder="User Email" class="form-input" required>`;
                 openModal('Register New User', formHtml, async (ev) => {
                     ev.preventDefault();
                     const data = Object.fromEntries(new FormData(ev.target).entries());
-                    await apiRequest('/users', 'POST', data, 'User registered successfully').then(() => fetchAndRenderUsers());
+                    await apiRequest('/users', 'POST', data, 'User registered successfully').then(() => fetchAndRenderUsers({}));
                 });
             });
             
-            bookSearchForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                const queryParams = Object.fromEntries(formData.entries());
-                for (let key in queryParams) { if (!queryParams[key]) delete queryParams[key]; }
-                fetchAndRenderBooks(queryParams);
-            });
-            document.getElementById('clear-book-search-btn').addEventListener('click', () => {
-                bookSearchForm.reset();
-                fetchAndRenderBooks();
-            });
-            
-            userSearchForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const query = new FormData(e.target).get('query').trim();
+            // Book Search (Desktop & Mobile)
+            const handleBookSearch = (field, value) => {
                 const queryParams = {};
-                if (query) {
-                    if (query.includes('@')) queryParams.email = query;
-                    else queryParams.public_id = query;
+                if (value) { queryParams[field] = value; }
+                debouncedBookSearch(queryParams);
+            };
+            bookSearchInput.addEventListener('keyup', () => handleBookSearch(bookSearchField.value, bookSearchInput.value.trim()));
+            bookSearchField.addEventListener('change', () => handleBookSearch(bookSearchField.value, bookSearchInput.value.trim()));
+            bookSearchInputMobile.addEventListener('keyup', () => handleBookSearch(bookSearchFieldMobile.value, bookSearchInputMobile.value.trim()));
+            bookSearchFieldMobile.addEventListener('change', () => handleBookSearch(bookSearchFieldMobile.value, bookSearchInputMobile.value.trim()));
+
+            // User Search
+            userSearchInput.addEventListener('keyup', () => {
+                const query = userSearchInput.value.trim();
+                const queryParams = {};
+                 if (query) {
+                    if (query.includes('@') || (query.length > 4 && (query.includes('-') || !isNaN(query.substring(0,4))))) {
+                        if (query.includes('@')) queryParams.email = query;
+                        else queryParams.public_id = query;
+                        debouncedUserSearch(queryParams);
+                    } else {
+                        const filtered = allUsers.filter(user => user.name.toLowerCase().includes(query.toLowerCase()));
+                        renderUserList(filtered);
+                    }
+                } else {
+                    renderUserList(allUsers);
                 }
-                fetchAndRenderUsers(queryParams);
             });
 
+            // Borrow Form
             document.getElementById('borrow-form').addEventListener('submit', (e) => {
                 e.preventDefault();
                 showNotification("Borrow feature is not yet connected to the backend.", true);
             });
 
+            // Event Delegation for Edit/Delete
             document.body.addEventListener('click', async (e) => {
                 const target = e.target.closest('button');
                 if (!target) return;
@@ -351,27 +474,42 @@
                 if (target.classList.contains('delete-user-btn')) {
                     const publicId = target.dataset.publicId;
                     openConfirmationModal('This will permanently delete the user.', async () => {
-                        await apiRequest(`/users/${publicId}`, 'DELETE', null, 'User deleted successfully').then(() => fetchAndRenderUsers());
+                        await apiRequest(`/users/${publicId}`, 'DELETE', null, 'User deleted successfully').then(() => fetchAndRenderUsers({}));
                     });
                 }
                 if (target.classList.contains('delete-book-btn')) {
                     const uuid = target.dataset.uuid;
                     openConfirmationModal('This will permanently delete the book.', async () => {
-                        await apiRequest('/books', 'DELETE', { uuid }, 'Book deleted successfully').then(() => fetchAndRenderBooks());
+                         await apiRequest('/books', 'DELETE', { uuid }, 'Book deleted successfully');
+                        const cardToRemove = booksListEl.querySelector(`[data-book-uuid="${uuid}"]`);
+                        if (cardToRemove) {
+                            cardToRemove.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                            cardToRemove.style.opacity = '0';
+                            cardToRemove.style.transform = 'scale(0.95)';
+                            setTimeout(() => {
+                                cardToRemove.remove();
+                                currentBooks = currentBooks.filter(book => book.uuid !== uuid);
+                                totalBooksStat.textContent = currentBooks.length;
+                                updateBorrowUI();
+                                if (currentBooks.length === 0) {
+                                    booksListEl.innerHTML = '<p class="text-[var(--text-secondary)] col-span-full text-center py-4">No books match your criteria.</p>';
+                                }
+                            }, 300);
+                        }
                     });
                 }
                 if (target.classList.contains('edit-user-btn')) {
-                    const publicId = target.dataset.publicId;
+                     const publicId = target.dataset.publicId;
                     const formHtml = `<input type="text" name="newName" placeholder="New Name" class="form-input mb-3"><input type="email" name="newEmail" placeholder="New Email" class="form-input">`;
                     openModal('Edit User', formHtml, async (ev) => {
                         ev.preventDefault();
                         const data = Object.fromEntries(new FormData(ev.target).entries());
                         if (!data.newName && !data.newEmail) return showNotification('Please provide a new name or email.', true);
-                        await apiRequest(`/users/${publicId}`, 'PATCH', data, 'User updated successfully').then(() => fetchAndRenderUsers());
+                        await apiRequest(`/users/${publicId}`, 'PATCH', data, 'User updated successfully').then(() => fetchAndRenderUsers({}));
                     });
                 }
                 if (target.classList.contains('edit-book-btn')) {
-                    const uuid = target.dataset.uuid;
+                     const uuid = target.dataset.uuid;
                     try {
                         const bookData = await apiRequest(`/books?uuid=${uuid}`, 'GET');
                         const bookToEdit = bookData[0];
@@ -383,8 +521,7 @@
                             <input type="text" name="publisher" placeholder="Publisher" class="form-input mb-3" value="${bookToEdit.publisher || ''}">
                             <input type="text" name="genre" placeholder="Genre" class="form-input mb-3" value="${bookToEdit.genre || ''}">
                             <input type="text" name="isbn" placeholder="ISBN" class="form-input mb-3" value="${bookToEdit.isbn || ''}">
-                            <input type="number" name="quantity" placeholder="Quantity" min="0" class="form-input" value="${bookToEdit.quantity || '0'}">
-                        `;
+                            <input type="number" name="quantity" placeholder="Quantity" min="0" class="form-input" value="${bookToEdit.quantity || '0'}">`;
                         openModal('Edit Book', formHtml, async (ev) => {
                             ev.preventDefault();
                             const formData = new FormData(ev.target);
@@ -397,9 +534,7 @@
                             if (edit_book_stack.length === 0) return showNotification('No changes were made.', false);
                             await apiRequest('/books', 'PATCH', { uuid, edit_book_stack }, 'Book updated successfully').then(() => fetchAndRenderBooks());
                         });
-                    } catch(err) {
-                        console.error("Failed to open edit modal:", err);
-                    }
+                    } catch(err) { console.error("Failed to open edit modal:", err); }
                 }
             });
         }
@@ -408,7 +543,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             setupEventListeners();
             fetchAndRenderBooks();
-            fetchAndRenderUsers();
+            fetchAndRenderUsers({});
         });
     </script>
 </body>

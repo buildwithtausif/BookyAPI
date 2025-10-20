@@ -6,7 +6,7 @@ import {
   edit_user,
   del_user_by_id,
 } from "../models/users.model.mjs";
-import conflict_check from "../models/conflictHandler.model.mjs";
+import recordExist from "../utils/dbUtils.model.mjs";
 import generatePublicId from "../service/id_service.mjs";
 
 // Create
@@ -34,7 +34,7 @@ const reg_newuser = async (req, res) => {
     let Idexists = false;
     do {
       public_id = generatePublicId();
-      const IdExists = await conflict_check({
+      const IdExists = await recordExist({
         tableName: "users",
         colName: "public_id",
         value: public_id,
@@ -44,7 +44,7 @@ const reg_newuser = async (req, res) => {
       }
     } while (Idexists);
     // check for any conflicting values of emails in database to ensure unque users
-    const emailExists = await conflict_check({
+    const emailExists = await recordExist({
       tableName: "users",
       colName: "email",
       value: email,
@@ -73,6 +73,16 @@ const getusers = async (req, res) => {
   try {
     // Check for query parameters in the URL (e.g., /users?public_id=7)
     const { public_id, email } = req.query;
+    // if both public id and email are provided and are not related to same user give error
+    if (public_id && email) {
+      const conflict = await recordExist({tableName: 'users', colName: 'email', value: email, excludeID: public_id});
+      /* rationale is if conflict is found that means either the user has entered
+        or some id that is taken by some other user or it does not exist
+      */
+     if (conflict) {
+      return res.status(404).json({error: "invalid or conflicting search query!"});
+     }
+    }
     // if an id is provided inside query
     if (public_id) {
       const user = await find_user_by_id(public_id);
@@ -141,7 +151,7 @@ const update_user = async (req, res) => {
           });
       }
       // check conflicting matches to newEmail in existing database
-      const isTaken = await conflict_check({
+      const isTaken = await recordExist({
         tableName: "users",
         colName: "email",
         value: newEmail,

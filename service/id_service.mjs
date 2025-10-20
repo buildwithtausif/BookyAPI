@@ -1,27 +1,49 @@
 import crypto from "crypto";
 /***
  * Generates a unique public-facing identifier based on a specific scheme.
- * The ID is composed of the current year, a random 4-character alphabetical string,
- * and a random 6-digit number, formatted as 'YYYY-ABCD-123123'. This format is
+ * The ID is composed of the current year and day, a random crypto secured 6-character alphabetical string,
+ * formatted as 'YYDDD-XXXXXX'. This format is
  * human-readable and provides a degree of temporal context.
- * * Public ID scheme: YYYY-ABCD-123123
+ * * Public ID scheme: YYDDD-XXXXXX
+ * * YY is 2-digit-year
+ * * DDD is the 3-digit day in a year 001 for Januaray 1
+ * * COLLISION PROOF: 1 billion unique IDs per day
  * * @returns {string} The formatted public ID string.
  ***/
 export default function generatePublicId() {
-  const currentDate = new Date();
-  const year = currentDate.getFullYear();
-  const characterSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const randomNumberPart = Math.floor(Math.random() * 1000000)
-    .toString()
-    .padStart(6, "0");
+  const now = new Date();
+  // Get 2-digit year
+  const year = now.getFullYear().toString().slice(-2); // say 25 for 2025
+  // CROCKFORD'S BASE32
+  const characterSet = "ABCDEFGHJKMNPQRSTVWXYZ0123456789";
+  // Get 3-digit day of year
+  const startOfYear = new Date(now.getFullYear(), 0, 0); // year, monthIndex, day
+  const diff = now - startOfYear;
+  // total number of milliseconds in one day, coz diff will give answer in milliseconds
+  const oneDay = 1000 * 60 * 60 * 24;
+  /*
+    in 1 day = oneDay ms
+    in ____ day = diff ms
+    => diff / oneDay
+  */
+  const dayOfYear = Math.floor(diff / oneDay);
+  // combine to get YYDDD
+  const prefix = `${year}${dayOfYear.toString().padStart(3, "0")}`;
 
-  let randomCharacterPart = "";
-  for (let i = 0; i < 4; i++) {
-    const randomIndex = Math.floor(Math.random() * characterSet.length);
-    randomCharacterPart += characterSet[randomIndex];
+  // create 6 character secure random suffix (xxxxxx);
+  let suffix = "";
+
+  // using cryptographically almost secure random number
+  const randomValues = new Uint32Array(6);
+  crypto.getRandomValues(randomValues);
+
+  for (let i = 0; i < 6; i++) {
+    // this will give any random index between 0 and 31 (using base32)
+    const randomIndex = randomValues[i] % characterSet.length;
+    suffix += characterSet[randomIndex];
   }
 
-  const publicId = `${year}-${randomCharacterPart}-${randomNumberPart}`;
+  const publicId = `${prefix}-${suffix}`;
   return publicId;
 }
 /***

@@ -16,7 +16,7 @@ export async function list_users() {
 }
 // find a user from their public_id 
 export async function find_user_by_id(public_id) {
-    let get_query = `SELECT * FROM public.users WHERE public_id = $1`;
+    let get_query = `SELECT public_id, "name", email, created_at, last_modified FROM public.users WHERE public_id = $1`;
     try {
         const user = await db.oneOrNone(get_query, [public_id]);
         return user;
@@ -25,7 +25,7 @@ export async function find_user_by_id(public_id) {
     }
 }
 export async function find_user_by_email(email) {
-    let get_query = `SELECT * FROM public.users WHERE email = $1`;
+    let get_query = `SELECT public_id, "name", email, created_at, last_modified FROM public.users WHERE email = $1`;
     try {
         const user = await db.oneOrNone(get_query, [email]);
         return user;

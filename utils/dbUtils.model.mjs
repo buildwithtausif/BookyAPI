@@ -1,4 +1,4 @@
-import db, {pgp} from './db.mjs';
+import db, {pgp} from '../models/db.mjs';
 // define confilicting data
 /* A confilicting data is any data that meatches already existing 
 entity in the server on recieving the same from client. */
@@ -12,16 +12,19 @@ entity in the server on recieving the same from client. */
 /**
  * 
  * @param {string} options.tableName --> name of the table in database
- * @param {string} options.colName --> name of the coloumn in database
+ * @param {string} options.colName --> name of the column in database
  * @param {any} options.value - The value to search for value
- * @param {number|string} [options.excludeId] - (Optional) A public_id to exclude from the search.
- * @returns {boolean} True : if any conflict found, False: is no conflict found
+ * @param {number|string} [options.excludeId] - (Optional) A public_id/uuid to exclude from the search.
+ * @param {boolean} [options.returnRow=false] - If true, returns the full row object instead of a boolean.
+ * @returns {Promise<boolean|object|null>} Returns boolean by default, or the record object/null if returnRow is true.
  */
 
-export default async function conflict_check({tableName, colName, value, excludeID = null}) {
+export default async function recordExist({tableName, colName, value, excludeID = null, returnRow = false}) {
     if (value === undefined || value === null) return false;
+    // generate select clause dynamically if return row is true
+    const selectClause = returnRow ? 'SELECT *' : 'SELECT 1';
     let query_template = `
-        SELECT 1 FROM $[tableName:name] WHERE $[colName:name] = $[value]
+        ${selectClause} FROM $[tableName:name] WHERE $[colName:name] = $[value]
     `;
     // core parameters of conflict_check
     const params = {
@@ -39,7 +42,12 @@ export default async function conflict_check({tableName, colName, value, exclude
         // generate final query
         let formatted_query = pgp.as.format(query_template, params);
         const response = await db.oneOrNone(formatted_query);
-        return response !== null
+        if (returnRow) {
+            return response; // return response row
+        } else {
+            // preserve boolean behaviour
+            return response !== null
+        }
     } catch (err) {
         console.log(`Error in checking conflicts from the server for ${tableName}: `, err);
         return false;

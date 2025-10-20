@@ -1,6 +1,6 @@
 import { db, pgp } from '../models/db.mjs';
-import { generatePublicId } from '../utils/generate_id.mjs'; // Import your custom ID generator
-import conflict_check from '../models/conflictHandler.model.mjs'; // Import your conflict checker
+import generatePublicId  from '../service/id_service.mjs'; 
+import conflict_check from '../models/conflictHandler.model.mjs'; 
 
 /**
  * This is a one-time-use script to clear old public_ids and then

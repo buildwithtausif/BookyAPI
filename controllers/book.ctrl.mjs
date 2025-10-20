@@ -4,7 +4,7 @@
 */
 
 import find_books from "../models/read_books.model.mjs";
-import conflict_check from "../models/conflictHandler.model.mjs";
+import recordExist from "../utils/dbUtils.model.mjs";
 import { generateUuid } from "../service/id_service.mjs";
 import { insertBooks } from "../models/cud_books.model.mjs";
 import {
@@ -18,7 +18,7 @@ import {
     I've not been able to implement it for the time being... 
     later on i'll implement that as well 
 
-    the one below is manual entry that follows either single object entry or an array or objects
+    the one below is manual entry that follows either single object entry or an array of objects
 
     like:-
     {
@@ -65,7 +65,7 @@ const addbooks = async (req, res) => {
     const books_array = [];
     const book_set = new Set();
 
-    // validation & conflict_check
+    // validation & recordExist
     for (const entry of entries) {
       if (!entry.title || !entry.author) {
         return res
@@ -86,7 +86,7 @@ const addbooks = async (req, res) => {
         book_set.add(isbn);
         console.log("Checking conflict for ISBN:", isbn);
         // checking if isbn is already existing in the database
-        const isbnExists = await conflict_check({
+        const isbnExists = await recordExist({
           tableName: "books",
           colName: "isbn",
           value: isbn,
@@ -210,7 +210,7 @@ const update_books = async (req, res) => {
 const delete_book = async (req, res) => {
   try {
     // get identifiers from request
-    const { uuid, isbn } = req.body;
+    const { uuid, isbn } = req.param;
     if (!uuid && !isbn) {
       return res.status(400).json({ error: "UUID or ISBN is required" });
     }

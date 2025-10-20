@@ -24,6 +24,7 @@ async function dualParamConflict(uuid, isbn) {
     if (!row) {
       return { error: `Book with provided uuid and isbn is not found` };
     }
+    // returned isbn and provided isbn if not matches
     if (row.isbn !== isbn) {
       return {
         error: "Conflict: UUID and ISBN do not belong to the same book",

@@ -30,6 +30,10 @@ export default async function find_books(criteria = {}) {
     condition.push(`genre ILIKE $${param_index++}`);
     values.push(`%${criteria.genre}%`);
   }
+  if (criteria.publisher) {
+    condition.push(`publisher ILIKE $${param_index++}`);
+    values.push(`%${criteria.publisher}%`);
+  }
   if (criteria.isbn) {
     condition.push(`isbn = $${param_index++}`);
     values.push(criteria.isbn);
