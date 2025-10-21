@@ -1,55 +1,84 @@
 import db from "./db.mjs";
 
 /**
- * Finds books based on a flexible set of criteria.
- * This is the "Query" part of CQRS.
- * @param {object} criteria - An object containing filter criteria (e.g., { author: '...', genre: '...' }).
- * @returns {Promise<Array>} - An array of book objects.
+ * Finds all unique books, calculates their borrowed and available quantities.
+ * @param {object} criteria - An object containing filter criteria.
+ * @returns {Promise<Array>} - An array of unique book objects with inventory counts.
  */
-export default async function find_books(criteria = {}) {
-  // base_quey
-  let query = `SELECT uuid,title,author,publisher,genre,isbn,quantity,created_at,last_modified FROM public.books`;
-  let condition = [];
-  let values = [];
-  let param_index = 1;
-  // building dynamic WHERE clause from query
-  if (criteria.uuid) {
-    condition.push(`uuid = $${param_index++}`);
-    values.push(criteria.uuid);
-  }
-  if (criteria.author) {
-    // ILIKE for case-insensitivity for partial matching on author names
-    condition.push(`author ILIKE $${param_index++}`);
-    values.push(`%${criteria.author}%`);
-  }
-  if (criteria.title) {
-    condition.push(`title ILIKE $${param_index++}`);
-    values.push(`%${criteria.title}%`);
-  }
-  if (criteria.genre) {
-    condition.push(`genre ILIKE $${param_index++}`);
-    values.push(`%${criteria.genre}%`);
-  }
-  if (criteria.publisher) {
-    condition.push(`publisher ILIKE $${param_index++}`);
-    values.push(`%${criteria.publisher}%`);
-  }
-  if (criteria.isbn) {
-    condition.push(`isbn = $${param_index++}`);
-    values.push(criteria.isbn);
+const find_books = async (criteria = {}) => {
+  // This query uses a subquery to count loans before joining, ensuring one row per book.
+  let query = `
+    SELECT 
+      b.uuid, 
+      b.title, 
+      b.author, 
+      b.publisher, 
+      b.genre, 
+      b.isbn, 
+      b.quantity,
+      -- Use COALESCE to show 0 instead of NULL if a book has no loans
+      COALESCE(loan_counts.borrowed_count, 0)::int AS borrowed_count,
+      -- Calculate the available quantity on the fly
+      (b.quantity - COALESCE(loan_counts.borrowed_count, 0))::int AS available_quantity,
+      b.created_at,
+      b.last_modified
+    FROM 
+      public.books b
+    LEFT JOIN (
+      -- This subquery first calculates the number of active loans for each unique book
+      SELECT 
+        book_id, 
+        COUNT(*) AS borrowed_count 
+      FROM 
+        public.borrow_logs 
+      WHERE 
+        return_date IS NULL 
+      GROUP BY 
+        book_id
+    ) AS loan_counts ON b.uuid = loan_counts.book_id
+  `;
+
+  const conditions = [];
+  const values = [];
+  let paramIndex = 1;
+
+  // Safely iterate over criteria properties.
+  Object.keys(criteria).forEach((key) => {
+    if (key === "status") return; // Status is handled separately.
+    const value = criteria[key];
+    if (["title", "author", "genre", "publisher"].includes(key)) {
+      conditions.push(`b.${key} ILIKE $${paramIndex++}`);
+      values.push(`%${value}%`);
+    } else if (["uuid", "isbn"].includes(key)) {
+      conditions.push(`b.${key} = $${paramIndex++}`);
+      values.push(value);
+    }
+  });
+
+  // Handle the 'status' filter using the calculated counts.
+  if (criteria.status) {
+    if (criteria.status.toLowerCase() === "available") {
+      // A book is available if its total quantity is greater than the number borrowed.
+      conditions.push(`(b.quantity > COALESCE(loan_counts.borrowed_count, 0))`);
+    } else if (criteria.status.toLowerCase() === "borrowed") {
+      // A book is considered "borrowed" if at least one copy is on loan.
+      conditions.push(`COALESCE(loan_counts.borrowed_count, 0) > 0`);
+    }
   }
 
-  // if any of the criteria is added add it to the query
-  if (condition.length > 0) {
-    query += " WHERE " + condition.join(" AND ");
+  if (conditions.length > 0) {
+    query += ` WHERE ${conditions.join(" AND ")}`;
   }
-  // ensuring a sequential order
-  query += " ORDER BY internal_id";
+
+  query += " ORDER BY b.title ASC;";
 
   try {
-    const books = await db.any(query, values);
-    return books;
+    const data = await db.any(query, values);
+    return data;
   } catch (err) {
+    console.error("Error executing find_book_inventory query:", err);
     throw err;
   }
-}
+};
+
+export default find_books;
