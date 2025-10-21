@@ -15,14 +15,15 @@
 
 # --- Ignore Dependencies & Generated Files ---
 
-# This is the most important rule. It tells Linguist to completely
-# ignore the node_modules directory when calculating language stats.
-# NOTE: You should also have node_modules/ in your .gitignore file.
+# Ignore the node_modules directory when calculating language stats.
 node_modules/* linguist-vendored
 
 # Exclude lockfiles from language statistics.
 package-lock.json linguist-vendored
 yarn.lock linguist-vendored
 
-# --- Documentation & Demo Files (Optional) ---
-public/index.html
+# --- Documentation & Demo Files ---
+
+# Correctly ignore the large HTML file from language stats.
+# This is the line that was fixed.
+public/index.html linguist-vendored
