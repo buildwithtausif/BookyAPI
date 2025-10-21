@@ -1,0 +1,28 @@
+# =================================================================
+# .gitattributes for GitHub Linguist
+#
+# Purpose: Correctly classify languages and ignore irrelevant files
+#          for the repository's language statistics bar.
+# =================================================================
+
+# --- Language & Extension Overrides ---
+
+# Explicitly treat all .mjs files as JavaScript.
+*.mjs linguist-language=JavaScript
+
+# Ensure .sql files are always recognized as SQL.
+*.sql linguist-language=SQL
+
+# --- Ignore Dependencies & Generated Files ---
+
+# This is the most important rule. It tells Linguist to completely
+# ignore the node_modules directory when calculating language stats.
+# NOTE: You should also have node_modules/ in your .gitignore file.
+node_modules/* linguist-vendored
+
+# Exclude lockfiles from language statistics.
+package-lock.json linguist-vendored
+yarn.lock linguist-vendored
+
+# --- Documentation & Demo Files (Optional) ---
+public/index.html
