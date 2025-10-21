@@ -20,6 +20,7 @@
             --danger-hover: #ef4444;
             --stat-1: #fbbf24;
             --stat-2: #34d399;
+            --stat-3: #f472b6;
         }
 
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -52,6 +53,11 @@
         .scrollable::-webkit-scrollbar { width: 6px; }
         .scrollable::-webkit-scrollbar-track { background: transparent; }
         .scrollable::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-success { background-color: rgba(52, 211, 153, 0.2); color: #34d399; }
+        .badge-warning { background-color: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .badge-danger { background-color: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .badge-info { background-color: rgba(129, 140, 248, 0.2); color: #818cf8; }
     </style>
 </head>
 <body class="antialiased">
@@ -127,7 +133,7 @@
                 </div>
 
                 <!-- Stat Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div class="surface rounded-lg p-6">
                         <h3 class="text-sm font-medium text-[var(--text-secondary)]">Total Books</h3>
                         <p id="total-books-stat" class="text-4xl font-bold mt-2" style="color: var(--stat-1)">0</p>
@@ -136,21 +142,74 @@
                         <h3 class="text-sm font-medium text-[var(--text-secondary)]">Total Users</h3>
                         <p id="total-users-stat" class="text-4xl font-bold mt-2" style="color: var(--stat-2)">0</p>
                     </div>
-                     <div class="surface rounded-lg p-6">
-                        <h3 class="text-sm font-medium text-[var(--text-secondary)]">Action Center</h3>
-                         <form id="borrow-form" class="space-y-3 mt-2">
-                             <select id="borrow-user-select" class="form-input text-sm" title="Select a user"></select>
-                             <select id="borrow-book-select" class="form-input text-sm" title="Select a book"></select>
-                             <button type="submit" class="btn btn-primary w-full" disabled>Borrow</button>
-                         </form>
+                    <div class="surface rounded-lg p-6">
+                        <h3 class="text-sm font-medium text-[var(--text-secondary)]">Active Transactions</h3>
+                        <p id="active-transactions-stat" class="text-4xl font-bold mt-2" style="color: var(--stat-3)">0</p>
+                    </div>
+                    <div class="surface rounded-lg p-6">
+                        <h3 class="text-sm font-medium text-[var(--text-secondary)]">Overdue Books</h3>
+                        <p id="overdue-books-stat" class="text-4xl font-bold mt-2" style="color: var(--danger)">0</p>
                     </div>
                 </div>
-                
-                <!-- Books and Users Tables -->
-                <div class="surface rounded-lg flex-grow flex flex-col p-4 min-h-0">
-                    <h2 class="text-xl font-semibold mb-4 px-2 flex-shrink-0">Book Collection</h2>
-                    <div id="books-list" class="flex-grow scrollable pr-2 -mr-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                        <!-- Book cards will be injected here -->
+
+                <!-- Borrow Books Section -->
+                <div class="surface rounded-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4">Borrow Books</h3>
+                    <form id="borrow-form" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">User ID or Email</label>
+                                <input type="text" id="borrow-user-input" placeholder="Enter public_id or email..." class="form-input">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Or Select User</label>
+                                <select id="borrow-user-select" class="form-input" title="Select a user"></select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">ISBN or UUID</label>
+                                <input type="text" id="borrow-book-input" placeholder="Enter ISBN or UUID..." class="form-input">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Or Select Book</label>
+                                <select id="borrow-book-select" class="form-input" title="Select a book"></select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-full" id="borrow-submit-btn">Borrow Book</button>
+                    </form>
+                </div>
+
+                <!-- Tab System for Books and Active Transactions -->
+                <div class="surface rounded-lg flex-grow flex flex-col p-0 min-h-0">
+                    <!-- Tab Navigation -->
+                    <div class="flex border-b border-[var(--border)] flex-shrink-0">
+                        <button id="tab-books" class="tab-btn flex-1 px-6 py-4 font-semibold text-center border-b-2 border-[var(--accent)] text-[var(--accent)] transition-colors" data-tab="books">
+                            Book Collection
+                        </button>
+                        <button id="tab-transactions" class="tab-btn flex-1 px-6 py-4 font-semibold text-center border-b-2 border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" data-tab="transactions">
+                            Active Transactions
+                        </button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="flex-grow flex flex-col min-h-0 p-4">
+                        <!-- Books Tab -->
+                        <div id="books-tab" class="tab-content flex-grow flex flex-col min-h-0">
+                            <div id="books-list" class="flex-grow scrollable pr-2 -mr-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                                <!-- Book cards will be injected here -->
+                            </div>
+                        </div>
+
+                        <!-- Active Transactions Tab -->
+                        <div id="transactions-tab" class="tab-content hidden flex-grow flex flex-col min-h-0">
+                            <div class="mb-4 flex-shrink-0">
+                                <input type="text" id="transaction-search-input" placeholder="Search by user ID, user name, or transaction ID..." class="form-input w-full">
+                            </div>
+                            <div id="active-transactions-list" class="flex-grow scrollable pr-2 -mr-2 space-y-3">
+                                <!-- Active transactions will be injected here -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -177,20 +236,30 @@
         const userSearchInput = document.getElementById('user-search-input');
         const borrowUserSelect = document.getElementById('borrow-user-select');
         const borrowBookSelect = document.getElementById('borrow-book-select');
+        const borrowUserInput = document.getElementById('borrow-user-input');
+        const borrowBookInput = document.getElementById('borrow-book-input');
+        const transactionSearchInput = document.getElementById('transaction-search-input');
         const totalBooksStat = document.getElementById('total-books-stat');
         const totalUsersStat = document.getElementById('total-users-stat');
+        const activeTransactionsStat = document.getElementById('active-transactions-stat');
+        const overdueBooksStat = document.getElementById('overdue-books-stat');
+        const activeTransactionsListEl = document.getElementById('active-transactions-list');
         const menuToggle = document.getElementById('menu-toggle');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const borrowForm = document.getElementById('borrow-form');
+        const borrowSubmitBtn = document.getElementById('borrow-submit-btn');
 
         // State
         let currentBooks = [];
         let allUsers = [];
+        let activeTransactions = [];
 
         // Icons & Spinners
         const loadingSpinner = '<div class="flex justify-center items-center h-full col-span-full"><div class="spinner"></div></div>';
         const iconEdit = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--text-secondary)] group-hover:text-[var(--accent)]"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>`;
         const iconDelete = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--text-secondary)] group-hover:text-[var(--danger)]"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
+        const iconReturn = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--text-secondary)] group-hover:text-[var(--stat-2)]"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>`;
 
         // Debounce Utility
         function debounce(func, delay) {
@@ -199,6 +268,15 @@
                 clearTimeout(timeout);
                 timeout = setTimeout(() => func.apply(this, args), delay);
             };
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function isOverdue(dueDate) {
+            return new Date(dueDate) < new Date();
         }
         
         // --- Core UI Functions ---
@@ -217,7 +295,7 @@
         }
 
         function openConfirmationModal(message, onConfirm) {
-            modalEl.innerHTML = `<div class="modal-overlay"><div class="surface p-6 rounded-xl w-11/12 max-w-md shadow-2xl"><h3 class="text-xl font-semibold mb-2">Are you sure?</h3><p class="text-[var(--text-secondary)]">${message}</p><div class="flex justify-end gap-3 mt-6"><button type="button" id="cancel-btn" class="btn btn-secondary">Cancel</button><button type="button" id="confirm-btn" class="btn btn-danger">Confirm Delete</button></div></div></div>`;
+            modalEl.innerHTML = `<div class="modal-overlay"><div class="surface p-6 rounded-xl w-11/12 max-w-md shadow-2xl"><h3 class="text-xl font-semibold mb-2">Are you sure?</h3><p class="text-[var(--text-secondary)]">${message}</p><div class="flex justify-end gap-3 mt-6"><button type="button" id="cancel-btn" class="btn btn-secondary">Cancel</button><button type="button" id="confirm-btn" class="btn btn-danger">Confirm Return</button></div></div></div>`;
             modalEl.classList.remove('hidden');
             document.getElementById('confirm-btn').addEventListener('click', () => { onConfirm(); closeModal(); });
             document.getElementById('cancel-btn').addEventListener('click', closeModal);
@@ -283,7 +361,6 @@
             return placeholder;
         }
 
-
         async function fetchAndRenderBooks(queryParams = {}) {
             booksListEl.innerHTML = loadingSpinner;
             try {
@@ -309,6 +386,10 @@
                                     <h4 class="font-bold text-md truncate">${book.title}</h4>
                                     <p class="text-sm text-[var(--text-secondary)] mb-2">by ${book.author}</p>
                                     <div class="text-xs text-[var(--text-muted)]">${book.genre || 'N/A'} &bull; ${book.publisher || 'N/A'}</div>
+                                    <div class="mt-2 flex gap-2">
+                                        <span class="badge badge-info">Available: ${book.available_quantity || 0}</span>
+                                        <span class="badge badge-warning">Borrowed: ${book.borrowed_count || 0}</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="text-xs font-mono text-[var(--text-secondary)] mt-3 border-t border-[var(--border)] pt-2 space-y-1">
@@ -377,6 +458,89 @@
                 usersListSidebarEl.appendChild(userItemSidebar);
             });
         }
+
+        async function fetchAndRenderActiveTransactions() {
+            activeTransactionsListEl.innerHTML = loadingSpinner;
+            try {
+                const result = await apiRequest('/books?status=borrowed', 'GET');
+                const borrowedBooks = Array.isArray(result) ? result : (result.data || []);
+                
+                const allLoans = [];
+                borrowedBooks.forEach(book => {
+                    if (book.loans && Array.isArray(book.loans)) {
+                        book.loans.forEach(loan => {
+                            allLoans.push({
+                                ...loan,
+                                book_title: book.title,
+                                book_uuid: book.uuid
+                            });
+                        });
+                    }
+                });
+                
+                activeTransactions = allLoans;
+                
+                const overdueCount = allLoans.filter(loan => isOverdue(loan.due_date)).length;
+                
+                overdueBooksStat.textContent = overdueCount;
+                activeTransactionsStat.textContent = allLoans.length;
+
+                renderActiveTransactions(allLoans);
+            } catch (error) {
+                console.error('[v0] Error loading transactions:', error);
+                activeTransactionsListEl.innerHTML = `<p class="text-[var(--text-secondary)] text-center py-4">No active transactions or unable to load.</p>`;
+            }
+        }
+
+        function renderActiveTransactions(loansToRender) {
+            activeTransactionsListEl.innerHTML = '';
+            
+            if (loansToRender.length === 0) {
+                activeTransactionsListEl.innerHTML = '<p class="text-[var(--text-secondary)] text-center py-4">No active transactions.</p>';
+                return;
+            }
+
+            loansToRender.forEach(loan => {
+                const dueDate = new Date(loan.due_date);
+                const isOverdueStatus = isOverdue(loan.due_date);
+                const daysUntilDue = Math.ceil((dueDate - new Date()) / (1000 * 60 * 60 * 24));
+                
+                const transactionCard = document.createElement('div');
+                transactionCard.className = `surface rounded-lg p-4 ${isOverdueStatus ? 'border-l-4 border-[var(--danger)]' : 'border-l-4 border-[var(--accent)]'}`;
+                transactionCard.dataset.transactionId = loan.transaction_id;
+                
+                transactionCard.innerHTML = `
+                    <div class="flex justify-between items-start gap-4">
+                        <div class="flex-grow">
+                            <h4 class="font-semibold text-base">${loan.book_title || 'Unknown Book'}</h4>
+                            <div class="mt-3 space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-medium text-[var(--text-secondary)]">Borrower:</span>
+                                    <span class="text-sm font-semibold">${loan.user_name || 'Unknown User'}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-medium text-[var(--text-secondary)]">User ID:</span>
+                                    <span class="text-xs font-mono text-[var(--text-muted)] bg-[var(--bg-main)] px-2 py-1 rounded">${loan.borrowed_by || 'N/A'}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-medium text-[var(--text-secondary)]">Transaction ID:</span>
+                                    <span class="text-xs font-mono text-[var(--text-muted)] bg-[var(--bg-main)] px-2 py-1 rounded truncate" title="${loan.transaction_id}">${loan.transaction_id.substring(0, 12)}...</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-medium text-[var(--text-secondary)]">Due Date:</span>
+                                    <span class="text-sm">${formatDate(loan.due_date)}</span>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                ${isOverdueStatus ? `<span class="badge badge-danger">OVERDUE by ${Math.abs(daysUntilDue)} days</span>` : `<span class="badge badge-success">${daysUntilDue} days remaining</span>`}
+                            </div>
+                        </div>
+                        <button class="return-book-btn group flex-shrink-0" data-transaction-id='${loan.transaction_id}' title="Return this book">${iconReturn}</button>
+                    </div>
+                `;
+                activeTransactionsListEl.appendChild(transactionCard);
+            });
+        }
         
         function updateBorrowUI() {
             borrowUserSelect.innerHTML = '<option value="">Select a user</option>';
@@ -389,17 +553,19 @@
                 }
             });
             borrowBookSelect.innerHTML = '<option value="">Select a book</option>';
-            const availableBooks = currentBooks.filter(book => (book.status === 'available' || !book.status));
+            const availableBooks = currentBooks.filter(book => (book.available_quantity > 0));
             availableBooks.forEach(book => {
                 const option = document.createElement('option');
                 option.value = book.uuid;
-                option.textContent = book.title;
+                option.textContent = `${book.title} (${book.available_quantity} available)`;
                 borrowBookSelect.appendChild(option);
             });
         }
 
         // --- Event Listeners Setup ---
         function setupEventListeners() {
+            setupTabSystem();
+
             // Mobile Sidebar Toggle
             menuToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('-translate-x-full');
@@ -460,10 +626,62 @@
                 }
             });
 
-            // Borrow Form
-            document.getElementById('borrow-form').addEventListener('submit', (e) => {
+            borrowForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                showNotification("Borrow feature is not yet connected to the backend.", true);
+                
+                let userId = borrowUserSelect.value;
+                if (!userId && borrowUserInput.value) {
+                    const inputValue = borrowUserInput.value.trim();
+                    const user = allUsers.find(u => u.public_id === inputValue || u.email === inputValue);
+                    userId = user ? user.public_id : null;
+                }
+                
+                let bookId = borrowBookSelect.value;
+                if (!bookId && borrowBookInput.value) {
+                    const inputValue = borrowBookInput.value.trim();
+                    const book = currentBooks.find(b => b.isbn === inputValue || b.uuid === inputValue);
+                    bookId = book ? book.uuid : null;
+                }
+                
+                if (!userId || !bookId) {
+                    showNotification('Please select or enter both a user and a book', true);
+                    return;
+                }
+
+                borrowSubmitBtn.disabled = true;
+                try {
+                    const borrowData = {
+                        public_id: userId,
+                        books: [{ uuid: bookId }]
+                    };
+                    await apiRequest('/borrow', 'POST', borrowData, 'Book borrowed successfully');
+                    borrowForm.reset();
+                    borrowUserInput.value = '';
+                    borrowBookInput.value = '';
+                    await fetchAndRenderBooks();
+                    await fetchAndRenderActiveTransactions();
+                } catch (error) {
+                    console.error('Borrow error:', error);
+                } finally {
+                    borrowSubmitBtn.disabled = false;
+                }
+            });
+
+            document.body.addEventListener('click', async (e) => {
+                const returnBtn = e.target.closest('.return-book-btn');
+                if (returnBtn) {
+                    const transactionId = returnBtn.dataset.transactionId;
+                    openConfirmationModal('Are you sure you want to return this book?', async () => {
+                        try {
+                            const returnData = [{ transaction_id: transactionId }];
+                            await apiRequest('/return', 'PATCH', returnData, 'Book returned successfully');
+                            await fetchAndRenderActiveTransactions();
+                            await fetchAndRenderBooks();
+                        } catch (error) {
+                            console.error('Return error:', error);
+                        }
+                    });
+                }
             });
 
             // Event Delegation for Edit/Delete
@@ -537,6 +755,50 @@
                     } catch(err) { console.error("Failed to open edit modal:", err); }
                 }
             });
+
+            transactionSearchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                
+                if (!searchTerm) {
+                    renderActiveTransactions(activeTransactions);
+                    return;
+                }
+                
+                const filtered = activeTransactions.filter(loan => {
+                    const userName = (loan.user_name || '').toLowerCase();
+                    const userId = (loan.borrowed_by || '').toLowerCase();
+                    const txnId = (loan.transaction_id || '').toLowerCase();
+                    
+                    return userName.includes(searchTerm) || 
+                           userId.includes(searchTerm) || 
+                           txnId.includes(searchTerm);
+                });
+                
+                renderActiveTransactions(filtered);
+            });
+        }
+
+        function setupTabSystem() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabName = btn.dataset.tab;
+                    
+                    // Update button styles
+                    tabBtns.forEach(b => {
+                        b.classList.remove('border-[var(--accent)]', 'text-[var(--accent)]');
+                        b.classList.add('border-transparent', 'text-[var(--text-secondary)]');
+                    });
+                    btn.classList.add('border-[var(--accent)]', 'text-[var(--accent)]');
+                    btn.classList.remove('border-transparent', 'text-[var(--text-secondary)]');
+                    
+                    // Update tab content visibility
+                    tabContents.forEach(content => content.classList.add('hidden'));
+                    document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+                });
+            });
         }
 
         // --- INITIALIZATION ---
@@ -544,8 +806,9 @@
             setupEventListeners();
             fetchAndRenderBooks();
             fetchAndRenderUsers({});
+            fetchAndRenderActiveTransactions();
+            setInterval(fetchAndRenderActiveTransactions, 30000);
         });
     </script>
 </body>
 </html>
-
