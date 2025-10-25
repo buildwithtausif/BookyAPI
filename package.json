@@ -14,7 +14,7 @@
     "PostgreSQL"
   ],
   "author": "Tausif Alam",
-  "license": "ISC",
+  "license": "MIT",
   "type": "module",
   "dependencies": {
     "dotenv": "^16.5.0",
