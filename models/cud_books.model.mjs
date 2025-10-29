@@ -83,7 +83,7 @@ export async function editBooks(uuid, isbn, edited_book_stack) {
     const updated_data = await db.oneOrNone(put_query, params);
     return updated_data;
   } catch (err) {
-    throw err;
+    console.log(err);
   }
 }
 
@@ -93,13 +93,13 @@ export async function deleteBook(uuid,isbn) {
         DELETE FROM public.books
         WHERE
             uuid = $1 OR isbn = $2
-        RETURNING uuid, isbn, title, author, publisher, genre, quantity, created_at, last_modified
+            RETURNING uuid, isbn, title, author, publisher, genre, quantity, created_at, last_modified
     `;
 
     try {
         const deleted_book = await db.oneOrNone(delete_query, [uuid,isbn]);
         return deleted_book;
     } catch (err) {
-        throw err;
+        console.log(err);
     }
 }

@@ -210,7 +210,7 @@ const update_books = async (req, res) => {
 const delete_book = async (req, res) => {
   try {
     // get identifiers from request
-    const { uuid, isbn } = req.param;
+    const { uuid, isbn } = req.query;
     if (!uuid && !isbn) {
       return res.status(400).json({ error: "UUID or ISBN is required" });
     }
