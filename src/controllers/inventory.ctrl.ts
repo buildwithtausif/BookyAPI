@@ -1,4 +1,3 @@
-import recordExist from "../utils/dbUtils.model.mjs";
 import { generateUuid } from "../service/id_service.mjs";
 import inventoryModel from "../models/inventory.model.js";
 import getErrorMessage from "../utils/errorHandler.js";
@@ -15,7 +14,7 @@ export default class inventoryController {
         if (typeof id !== "string") {
           return res.status(404).json({ Error: "Invalid ID provided" });
         }
-        let inventoryHandler = new inventoryModel(id);
+        const inventoryHandler = new inventoryModel(id);
         const inventoryEntries = await inventoryHandler.readEntries();
         return inventoryEntries
           ? res.status(200).json(inventoryEntries)
@@ -24,13 +23,13 @@ export default class inventoryController {
             });
       }
       // if no id is provided then return the whole data
-      let inventoryHandler = new inventoryModel();
+      const inventoryHandler = new inventoryModel();
       const inventoryEntries = await inventoryHandler.readEntries();
       return inventoryEntries
         ? res.status(200).json(inventoryEntries)
         : res.status(404).json({ Message: "Inventory is currently empty" });
     } catch (error: unknown) {
-      let message = getErrorMessage(error);
+      const message = getErrorMessage(error);
       return res
         .status(500)
         .json({ Error: `Internal Server Error => ${message}` });
@@ -90,10 +89,10 @@ export default class inventoryController {
         totalqty,
         currentqty
       );
-      let inventoryEntries = await pushHandler.createEntry();
+      const inventoryEntries = await pushHandler.createEntry();
       return res.status(200).json(inventoryEntries);
     } catch (error: unknown) {
-      let message = getErrorMessage(error);
+      const message = getErrorMessage(error);
       return res
         .status(500)
         .json({ Error: `Internal Server Error => ${message}` });
@@ -156,7 +155,7 @@ export default class inventoryController {
         return res.status(404).json({ error: "No records found to delete." });
       }
     } catch (error: unknown) {
-      let message = getErrorMessage(error);
+      const message = getErrorMessage(error);
       return res
         .status(500)
         .json({ Error: `Internal Server Error => ${message}` });
